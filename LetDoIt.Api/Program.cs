@@ -2,6 +2,7 @@ using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddValidation();
@@ -47,7 +48,7 @@ app.MapPost("/tasks", async (LetDoItContext db, LetDoIt.Api.Models.Task task) =>
 // GET endpoint to retrieve tasks for user with id=1
 app.MapGet("/tasks/user/1", async (LetDoItContext db) =>
 {
-    var tasks = await db.Tasks.Where(t => t.UserId == 1 && !t.IsCompleted).ToListAsync();
+    var tasks = await db.Tasks.Where(t => t.UserId == 1).ToListAsync();
     return Results.Ok(tasks);
 });
 app.Run();

@@ -15,10 +15,8 @@ public class Task
 
     public Task()
     {
-        _title = string.Empty;
         _description = string.Empty;
         _status = string.Empty;
-        _visibility = string.Empty;
     }
 
     public Task(int taskId, int userId, int? categoryId, string title, string description, DateTime dueDate, bool isCompleted, int priority, string status, string visibility)

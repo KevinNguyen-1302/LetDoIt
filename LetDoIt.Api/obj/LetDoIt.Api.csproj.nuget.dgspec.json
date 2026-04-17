@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Porfolio\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj": {}
+    "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj": {}
   },
   "projects": {
-    "D:\\Porfolio\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj": {
+    "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Porfolio\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
+        "projectUniqueName": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
         "projectName": "LetDoIt.Api",
-        "projectPath": "D:\\Porfolio\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
+        "projectPath": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
         "packagesPath": "C:\\Users\\duykh\\.nuget\\packages\\",
-        "outputPath": "D:\\Porfolio\\LetDoIt\\LetDoIt.Api\\obj\\",
+        "outputPath": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

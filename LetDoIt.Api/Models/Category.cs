@@ -9,8 +9,6 @@ public class Category
 
     public Category()
     {
-        _categoryName = string.Empty;
-        _colorCode = string.Empty;
     }
 
     public Category(int categoryId, int userId, string categoryName, string colorCode)
@@ -23,7 +21,7 @@ public class Category
 
     public int CategoryId { get => _categoryId; set => _categoryId = value; }
     public required int UserId { get => _userId; set => _userId = value; }
-    public string Name { get => _categoryName; set => _categoryName = value; }
+    public required string Name { get => _categoryName; set => _categoryName = value; }
     public string ColorCode { get => _colorCode; set => _colorCode = value; }
     public virtual Users? User { get; set; }
     public virtual ICollection<Task>? Tasks { get; set; }
