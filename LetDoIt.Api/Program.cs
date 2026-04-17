@@ -51,4 +51,7 @@ app.MapGet("/tasks/user/1", async (LetDoItContext db) =>
     var tasks = await db.Tasks.Where(t => t.UserId == 1).ToListAsync();
     return Results.Ok(tasks);
 });
+
+app.MigrateDb();
+
 app.Run();
