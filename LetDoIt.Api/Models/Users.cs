@@ -4,7 +4,7 @@ namespace LetDoIt.Api.Models;
 
 public class Users
 {
-    [Required]
+    [Key]
     public int UserId { get; set; }
     [Required]
     [MaxLength(200)]
