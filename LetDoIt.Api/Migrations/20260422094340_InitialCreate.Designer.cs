@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LetDoIt.Api.Migrations
 {
     [DbContext(typeof(LetDoItContext))]
-    [Migration("20260417091348_AddFriendAndSessionEntities")]
-    partial class AddFriendAndSessionEntities
+    [Migration("20260422094340_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -238,9 +238,8 @@ namespace LetDoIt.Api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Visibility")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Visibility")
+                        .HasColumnType("integer");
 
                     b.HasKey("TaskId");
 

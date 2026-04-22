@@ -1,7 +1,5 @@
-﻿using LetDoIt.Api.Data;
-using Microsoft.AspNetCore.Http;
+﻿using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -9,32 +7,50 @@ namespace LetDoIt.Api.Controllers
     [ApiController]
     public class TaskController : ControllerBase
     {
-        private readonly LetDoItContext _context;
-        public TaskController(LetDoItContext context)
+        private readonly ITaskService _service;
+        public TaskController(ITaskService service) => _service = service;
+
+        [HttpGet]
+        public async Task<ActionResult<List<Models.Task>>> GetTasks()
+            => Ok(await _service.GetAllTasksAsync());
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Models.Task?>> GetTaskById(int id)
         {
-            _context = context;
+            var task = await _service.GetTaskByIdAsync(id);
+            if (task is null) return NotFound("Khong the tim thay task voi Id chi dinh");
+            return Ok(task);
         }
 
-        //static List<Models.Task> tasks = new List<Models.Task>
-        //{
-        //        new Models.Task { TaskId = 1, Title = "Task 1", Description = "Description for Task 1", IsCompleted = false },
-        //        new Models.Task { TaskId = 2, Title = "Task 2", Description = "Description for Task 2", IsCompleted = true },
-        //        new Models.Task { TaskId = 3, Title = "Task 3", Description = "Description for Task 3", IsCompleted = false },
-        //};
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<Models.Task?>> GetTaskByUserId(int userId)
+        {
+            var tasks = await _service.GetTaskByUserId(userId);
+            if (tasks is null) return NotFound("Khong the tim thay task voi UserId chi dinh");
+            return Ok(tasks);
+        }
 
         [HttpPost]
         public async Task<ActionResult<Models.Task>> CreateTask(Models.Task task)
         {
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTasks), new { id = task.TaskId }, task);
+            var createdTask = await _service.CreateTaskAsync(task);
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.TaskId }, createdTask);
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Models.Task>>> GetTasks()
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateTask(int id, Models.Task task)
         {
-            var tasks = await _context.Tasks.ToListAsync<Models.Task>();
-            return Ok(tasks);
+            var updated = await _service.UpdateTaskAsync(id, task);
+            if (!updated) return NotFound("Khong the tim thay task voi Id chi dinh");
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteTask(int id)
+        {
+            var deleted = await _service.DeleteTaskAsync(id);
+            if (!deleted) return NotFound("Khong the tim thay task voi Id chi dinh");
+            return NoContent();
         }
     }
 }

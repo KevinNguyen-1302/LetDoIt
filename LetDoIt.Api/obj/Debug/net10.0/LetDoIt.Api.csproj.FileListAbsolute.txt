@@ -238,4 +238,3 @@ D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\refint\LetDoIt.Api.dll
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\LetDoIt.Api.pdb
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\LetDoIt.Api.genruntimeconfig.cache
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\ref\LetDoIt.Api.dll
-D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt

@@ -235,9 +235,8 @@ namespace LetDoIt.Api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Visibility")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Visibility")
+                        .HasColumnType("integer");
 
                     b.HasKey("TaskId");
 

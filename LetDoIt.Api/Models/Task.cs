@@ -20,7 +20,7 @@ public class Task
     [Required]
     public Status Status { get; set; } = Status.Pending; // Default to Pending
     [Required]
-    public string Visibility { get; set; } = "Private"; // Default to Private
+    public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
 
     public virtual Users? User { get; set; }
     public virtual Category? Category { get; set; }
@@ -32,4 +32,10 @@ public enum Status
     InProgress = 2,
     Completed = 3,
     Canceled = 4
+}
+
+public enum TaskVisibility
+{
+    Private = 1,
+    Public = 2
 }
