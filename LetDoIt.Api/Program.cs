@@ -1,6 +1,7 @@
 using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using LetDoIt.Api.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<LetDoItContext>(options =>
     options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 var app = builder.Build();
 
