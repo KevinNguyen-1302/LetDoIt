@@ -1,6 +1,8 @@
 using LetDoIt.Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using LetDoIt.Api.Models;
+using LetDoIt.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -24,53 +26,9 @@ public class TaskService : ITaskService
     {
         var existingTask = await GetTaskByIdAsync(taskId);
 
-        if (existingTask == null)
-        {
-            return false;
-        }
-
-        _context.Tasks.Remove(existingTask);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
-
-    public async Task<List<Models.Task>> GetAllTasksAsync()
-    {
-        return await _context.Tasks.ToListAsync();
-    }
-
-    public async Task<Models.Task?> GetTaskByIdAsync(int taskId)
-    {
-        return await _context.Tasks.FirstOrDefaultAsync(t => t.TaskId == taskId);
-    }
-
-    public async Task<List<Models.Task>> GetTaskByUserId(int userId)
-    {
-        return await _context.Tasks.Where(t => t.UserId == userId).ToListAsync();
-    }
-
-    public async Task<bool> UpdateTaskAsync(int taskId, Models.Task task)
-    {
-        var existingTask = await GetTaskByIdAsync(taskId);
 
         if (existingTask == null) return false;
-
-        existingTask.Title = task.Title;
-        existingTask.Description = task.Description;
-        existingTask.DueDate = task.DueDate;
-        existingTask.IsCompleted = task.IsCompleted;
-        existingTask.Priority = task.Priority;
-        existingTask.Status = task.Status;
-        existingTask.Visibility = task.Visibility;
-        existingTask.CategoryId = task.CategoryId;
+        _context.Tasks.Remove(new Models.Task { TaskId = taskId });
         try
         {
             await _context.SaveChangesAsync();
@@ -80,5 +38,95 @@ public class TaskService : ITaskService
         {
             return false;
         }
+    }
+
+    public async Task<List<GetTaskResponse>> GetAllTasksAsync()
+    {
+        return await _context.Tasks
+            .Select(t => new GetTaskResponse
+            {
+                CategoryId = t.CategoryId,
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = t.Priority,
+                Status = t.Status,
+                Visibility = t.Visibility
+            })
+            .ToListAsync();
+    }
+
+    public async Task<GetTaskResponse?> GetTaskByIdAsync(int taskId)
+    {
+        var result = await _context.Tasks
+            .Where(t => t.TaskId == taskId)
+            .Select(t => new GetTaskResponse
+            {
+                CategoryId = t.CategoryId,
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = t.Priority,
+                Status = t.Status,
+                Visibility = t.Visibility
+            })
+            .FirstOrDefaultAsync();
+        return result;
+
+    }
+
+    public async Task<List<GetTaskResponse>> GetTaskByUserId(int userId)
+    {
+        return await _context.Tasks
+            .Where(t => t.UserId == userId)
+            .Select(t => new GetTaskResponse
+            {
+                CategoryId = t.CategoryId,
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = t.Priority,
+                Status = t.Status,
+                Visibility = t.Visibility
+            })
+            .ToListAsync();
+    }
+
+    public async Task<bool> UpdateTaskAsync(int taskId, UpdateTaskRequest task)
+    {
+        Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
+        var existingTask = await _context.Tasks.FindAsync(taskId);
+
+        if (existingTask == null)
+        { return false; }
+        else
+        {
+            existingTask.Title = task.Title;
+            existingTask.Description = task.Description;
+            existingTask.DueDate = task.DueDate;
+            existingTask.IsCompleted = task.IsCompleted;
+            existingTask.Priority = task.Priority;
+            existingTask.Status = task.Status;
+            existingTask.Visibility = task.Visibility;
+            existingTask.CategoryId = task.CategoryId;
+        }
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LỖI UPDATE TASK]: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"[CHI TIẾT]: {ex.InnerException.Message}");
+                }
+                return false;
+            }
+        
     }
 }

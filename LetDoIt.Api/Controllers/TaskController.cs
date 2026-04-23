@@ -1,5 +1,6 @@
 ﻿using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using LetDoIt.Api.DTOs;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -11,7 +12,7 @@ namespace LetDoIt.Api.Controllers
         public TaskController(ITaskService service) => _service = service;
 
         [HttpGet]
-        public async Task<ActionResult<List<Models.Task>>> GetTasks()
+        public async Task<ActionResult<List<GetTaskResponse>>> GetTasks()
             => Ok(await _service.GetAllTasksAsync());
 
         [HttpGet("{id}")]
@@ -38,7 +39,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTask(int id, Models.Task task)
+        public async Task<ActionResult> UpdateTask(int id, UpdateTaskRequest task)
         {
             var updated = await _service.UpdateTaskAsync(id, task);
             if (!updated) return NotFound("Khong the tim thay task voi Id chi dinh");

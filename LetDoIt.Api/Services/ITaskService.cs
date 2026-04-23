@@ -1,13 +1,14 @@
-﻿using LetDoIt.Api.Models;
+﻿using LetDoIt.Api.DTOs;
 namespace LetDoIt.Api.Services
+
 {
     public interface ITaskService
     {
-        Task<List<Models.Task>> GetAllTasksAsync(); 
-        Task<Models.Task?> GetTaskByIdAsync(int taskId);
+        Task<List<GetTaskResponse>> GetAllTasksAsync();
+        Task<GetTaskResponse?> GetTaskByIdAsync(int taskId);
         Task<Models.Task> CreateTaskAsync(Models.Task task);
-        Task<bool> UpdateTaskAsync(int taskId, Models.Task task);
+        Task<bool> UpdateTaskAsync(int taskId, UpdateTaskRequest task);
         Task<bool> DeleteTaskAsync(int taskId);
-        Task<List<Models.Task?>> GetTaskByUserId(int userId);
+        Task<List<GetTaskResponse>> GetTaskByUserId(int userId);
     }
 }
