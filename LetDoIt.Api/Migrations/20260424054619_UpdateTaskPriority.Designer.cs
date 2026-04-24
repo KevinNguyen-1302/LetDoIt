@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LetDoIt.Api.Migrations
 {
     [DbContext(typeof(LetDoItContext))]
-    [Migration("20260417090619_AddNotificationEntities")]
-    partial class AddNotificationEntities
+    [Migration("20260424054619_UpdateTaskPriority")]
+    partial class UpdateTaskPriority
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,6 +51,67 @@ namespace LetDoIt.Api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("LetDoIt.Api.Models.Friend", b =>
+                {
+                    b.Property<int>("FriendId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FriendId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("User1Id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("User2Id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FriendId");
+
+                    b.HasIndex("User2Id");
+
+                    b.HasIndex("User1Id", "User2Id")
+                        .IsUnique();
+
+                    b.ToTable("Friends");
+                });
+
+            modelBuilder.Entity("LetDoIt.Api.Models.FriendRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("RequestId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("RecieverId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("integer");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("RecieverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("FriendRequests");
                 });
 
             modelBuilder.Entity("LetDoIt.Api.Models.Notification", b =>
@@ -110,6 +171,37 @@ namespace LetDoIt.Api.Migrations
                     b.ToTable("NotificationDetails");
                 });
 
+            modelBuilder.Entity("LetDoIt.Api.Models.Session", b =>
+                {
+                    b.Property<int>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SessionId"));
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("Sessions");
+                });
+
             modelBuilder.Entity("LetDoIt.Api.Models.Task", b =>
                 {
                     b.Property<int>("TaskId")
@@ -146,9 +238,8 @@ namespace LetDoIt.Api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Visibility")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Visibility")
+                        .HasColumnType("integer");
 
                     b.HasKey("TaskId");
 
@@ -249,6 +340,44 @@ namespace LetDoIt.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LetDoIt.Api.Models.Friend", b =>
+                {
+                    b.HasOne("LetDoIt.Api.Models.Users", "User1")
+                        .WithMany()
+                        .HasForeignKey("User1Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LetDoIt.Api.Models.Users", "User2")
+                        .WithMany()
+                        .HasForeignKey("User2Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User1");
+
+                    b.Navigation("User2");
+                });
+
+            modelBuilder.Entity("LetDoIt.Api.Models.FriendRequest", b =>
+                {
+                    b.HasOne("LetDoIt.Api.Models.Users", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("RecieverId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LetDoIt.Api.Models.Users", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("LetDoIt.Api.Models.Notification", b =>
                 {
                     b.HasOne("LetDoIt.Api.Models.Users", "Sender")
@@ -277,6 +406,17 @@ namespace LetDoIt.Api.Migrations
                     b.Navigation("Notification");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LetDoIt.Api.Models.Session", b =>
+                {
+                    b.HasOne("LetDoIt.Api.Models.Task", "Task")
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("LetDoIt.Api.Models.Task", b =>

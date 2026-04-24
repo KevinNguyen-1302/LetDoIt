@@ -1,0 +1,17 @@
+# Use this workspace to collaborate
+workspace:
+  id: 552f2d32-2a71-4a2e-82c5-a94d3aeb9dcc
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  environments:
+    ..\postman\environments\LetDoIt-Local.environment.yaml: db88b11a-808c-55f8-b34b-63097580d34d
+  collections:
+    ..\postman\collections\LetDoIt.API request: 50830379-a164a218-d2ab-44ed-8b9c-03e460ba67cd
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
