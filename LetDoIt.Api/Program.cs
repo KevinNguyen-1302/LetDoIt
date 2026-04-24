@@ -1,3 +1,4 @@
+using LetDoIt.Api.Controllers;
 using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
@@ -25,10 +26,10 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-
 builder.Services.AddHostedService<PriorityWorker>();
 
 var app = builder.Build();
+
 
 app.MapGet("/health/db", async (LetDoItContext db) =>
 {

@@ -19,9 +19,11 @@ public class Users
     [Required]
     [MaxLength(255)]
     public string HashedPassword { get; set; } = null!;
+    [Phone]
+    public string? PhoneNumber { get; set; }
+    public DateOnly Dob { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    [MaxLength(20)]
     public string? Status { get; set; } = null!;
     public string? AvatarUrl { get; set; }
     public DateTime LastLogin { get; set; } = DateTime.UtcNow;
