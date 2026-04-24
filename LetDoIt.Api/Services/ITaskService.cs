@@ -1,4 +1,5 @@
 ﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.Models;
 namespace LetDoIt.Api.Services
 
 {
@@ -10,5 +11,7 @@ namespace LetDoIt.Api.Services
         Task<bool> UpdateTaskAsync(int taskId, UpdateTaskRequest task);
         Task<bool> DeleteTaskAsync(int taskId);
         Task<List<GetTaskResponse>> GetTaskByUserId(int userId);
+        Task<bool> UpdateStatusAsync(int taskId, string status);
+        Task<bool> ChangePriority(int taskId, Priority? priority);
     }
 }

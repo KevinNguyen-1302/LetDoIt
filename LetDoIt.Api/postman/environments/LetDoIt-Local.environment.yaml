@@ -1,0 +1,14 @@
+name: LetDoIt - Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:5112'
+    enabled: true
+    type: default
+  - key: taskId
+    value: '1'
+    enabled: true
+    type: default
+  - key: userId
+    value: '1'
+    enabled: true
+    type: default

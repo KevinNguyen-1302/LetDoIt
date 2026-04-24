@@ -15,6 +15,37 @@ public class TaskService : ITaskService
     {
         _context = context;
     }
+
+    public async Task<bool> ChangePriority(int taskId, Priority? newPriority = null)
+    {
+        var task = await _context.Tasks.FindAsync(taskId);
+        if (task == null) return false;
+
+        // Logic: Nếu user truyền priority vào thì dùng, nếu null thì tự tính
+        if (newPriority.HasValue)
+        {
+            task.Priority = newPriority.Value;
+        }
+        else
+        {
+            task.Priority = CalculatePriority(task.DueDate);
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    private Priority CalculatePriority(DateTime dueDate)
+    {
+        var now = DateTime.UtcNow;
+        var daysRemaining = (dueDate - now).TotalDays;
+        Console.WriteLine($"DEBUG: Hiện tại là {now}, DueDate là {dueDate}, còn lại {daysRemaining} ngày");
+        if (daysRemaining <= 1) return Priority.Urgent;   // Sát nút (trong 24h)
+        else if (daysRemaining <= 3) return Priority.High;     // Sắp tới (trong 3 ngày)
+        else if (daysRemaining <= 7) return Priority.Medium;   // Sắp tới (trong 1 tuần)
+        else return Priority.Low;                               // Còn xa
+    }
+
     public async Task<Models.Task> CreateTaskAsync(Models.Task task)
     {
         _context.Tasks.Add(task);
@@ -50,7 +81,7 @@ public class TaskService : ITaskService
                 Description = t.Description,
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
-                Priority = t.Priority,
+                Priority = (int)t.Priority,
                 Status = t.Status,
                 Visibility = t.Visibility
             })
@@ -68,7 +99,7 @@ public class TaskService : ITaskService
                 Description = t.Description,
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
-                Priority = t.Priority,
+                Priority = (int)t.Priority,
                 Status = t.Status,
                 Visibility = t.Visibility
             })
@@ -88,11 +119,16 @@ public class TaskService : ITaskService
                 Description = t.Description,
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
-                Priority = t.Priority,
+                Priority = (int)t.Priority,
                 Status = t.Status,
                 Visibility = t.Visibility
             })
             .ToListAsync();
+    }
+
+    public Task<bool> UpdateStatusAsync(int taskId, string status)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<bool> UpdateTaskAsync(int taskId, UpdateTaskRequest task)
@@ -107,7 +143,7 @@ public class TaskService : ITaskService
             existingTask.Description = task.Description;
             existingTask.DueDate = task.DueDate;
             existingTask.IsCompleted = task.IsCompleted;
-            existingTask.Priority = task.Priority;
+            existingTask.Priority = CalculatePriority(existingTask.DueDate);
             existingTask.Status = task.Status;
             existingTask.Visibility = task.Visibility;
             existingTask.CategoryId = task.CategoryId;

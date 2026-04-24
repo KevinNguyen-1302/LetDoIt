@@ -1,6 +1,7 @@
 ﻿using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using LetDoIt.Api.DTOs;
+using LetDoIt.Api.Models;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -51,6 +52,15 @@ namespace LetDoIt.Api.Controllers
         {
             var deleted = await _service.DeleteTaskAsync(id);
             if (!deleted) return NotFound("Khong the tim thay task voi Id chi dinh");
+            return NoContent();
+        }
+
+        // Accept priority in the request body as JSON. If omitted (null) service will auto-calculate.
+        [HttpPut("{id}/priority")]
+        public async Task<ActionResult> ChangePriority(int id, [FromBody] ChangePriorityRequest? request)
+        {
+            var changed = await _service.ChangePriority(id, request?.Priority);
+            if (!changed) return NotFound("Khong the tim thay task voi Id chi dinh");
             return NoContent();
         }
     }

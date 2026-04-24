@@ -1,6 +1,7 @@
 using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
+using LetDoIt.Api.Workers;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -8,12 +9,12 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddValidation();
+
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<LetDoItContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<LetDoItContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<ITaskService, TaskService>();
 
@@ -25,6 +26,7 @@ builder.Services.AddControllers()
     });
 
 
+builder.Services.AddHostedService<PriorityWorker>();
 
 var app = builder.Build();
 
@@ -69,6 +71,8 @@ Console.WriteLine(@"
                 +------+
           LetDoIt API Running...
 ");
+
+Console.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
 app.Run();
 

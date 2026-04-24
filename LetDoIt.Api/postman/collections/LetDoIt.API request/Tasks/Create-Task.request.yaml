@@ -1,0 +1,20 @@
+$kind: http-request
+name: Create Task
+method: POST
+url: "{{baseUrl}}/api/task"
+order: 4000
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": 1,
+      "categoryId": null,
+      "title": "lam bai",
+      "description": "Task description here",
+      "dueDate": "2026-04-29T00:00:00Z",
+      "isCompleted": false,
+      "status": "Pending",
+      "visibility": "Public"
+    }
