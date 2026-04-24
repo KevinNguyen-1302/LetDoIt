@@ -99,9 +99,8 @@ public class TaskService : ITaskService
     {
         Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
         var existingTask = await _context.Tasks.FindAsync(taskId);
-
         if (existingTask == null)
-        { return false; }
+        {return false;}
         else
         {
             existingTask.Title = task.Title;
