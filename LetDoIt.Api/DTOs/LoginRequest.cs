@@ -4,8 +4,8 @@ namespace LetDoIt.Api.DTOs
 {
     public class LoginRequest
     {
-        [Required]
-        public string UsernameOrEmail { get; set; } = null!;
+        public required string Username { get; set; }        
+        public required string Email { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

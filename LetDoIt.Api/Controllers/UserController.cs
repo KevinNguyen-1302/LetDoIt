@@ -19,7 +19,7 @@ namespace LetDoIt.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var user = new Users
+            user = new Users
             {
                 Username = request.Username,
                 Email = request.Email,
@@ -35,10 +35,19 @@ namespace LetDoIt.Api.Controllers
             return Ok(user);
         }
 
-        //[HttpPost("login")]
-        //public ActionResult<string> Login(LoginRequest request)
-        //{
-
-        //}
+        [HttpPost("login")]
+        public ActionResult<string> Login(LoginRequest request)
+        {
+            if (user.Username != request.Username && user.Email != request.Email)
+            {
+                return BadRequest("Invalid username or email.");
+            }
+            if (new PasswordHasher<Users>().VerifyHashedPassword(user, user.HashedPassword, request.Password) == PasswordVerificationResult.Failed)
+            {
+                return BadRequest("Wrong password.");
+            }
+            string token = "successfully logged in";
+            return Ok(token);
+        }
     }
 }
