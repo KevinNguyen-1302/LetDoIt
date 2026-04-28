@@ -16,7 +16,7 @@ public class TaskService : ITaskService
         _context = context;
     }
 
-    public async Task<bool> ChangePriority(int taskId, Priority? newPriority = null)
+    public async Task<bool> ChangePriority(Guid taskId, Priority? newPriority = null)
     {
         var task = await _context.Tasks.FindAsync(taskId);
         if (task == null) return false;
@@ -53,7 +53,7 @@ public class TaskService : ITaskService
         return task;
     }
 
-    public async Task<bool> DeleteTaskAsync(int taskId)
+    public async Task<bool> DeleteTaskAsync(Guid taskId)
     {
         var existingTask = await GetTaskByIdAsync(taskId);
 
@@ -88,7 +88,7 @@ public class TaskService : ITaskService
             .ToListAsync();
     }
 
-    public async Task<GetTaskResponse?> GetTaskByIdAsync(int taskId)
+    public async Task<GetTaskResponse?> GetTaskByIdAsync(Guid taskId)
     {
         var result = await _context.Tasks
             .Where(t => t.TaskId == taskId)
@@ -108,7 +108,7 @@ public class TaskService : ITaskService
 
     }
 
-    public async Task<List<GetTaskResponse>> GetTaskByUserId(int userId)
+    public async Task<List<GetTaskResponse>> GetTaskByUserId(Guid userId)
     {
         return await _context.Tasks
             .Where(t => t.UserId == userId)
@@ -126,12 +126,12 @@ public class TaskService : ITaskService
             .ToListAsync();
     }
 
-    public Task<bool> UpdateStatusAsync(int taskId, string status)
+    public Task<bool> UpdateStatusAsync(Guid taskId, string status)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<bool> UpdateTaskAsync(int taskId, UpdateTaskRequest task)
+    public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task)
     {
         Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
         var existingTask = await _context.Tasks.FindAsync(taskId);

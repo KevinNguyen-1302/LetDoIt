@@ -1,23 +1,19 @@
 $kind: http-request
 name: Update Task
 method: PUT
-url: '{{baseUrl}}/api/task/{{taskId}}'
+url: "{{baseUrl}}/api/task/10"
 order: 5000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
     {
-      "taskId": 1,
-      "userId": 1,
-      "categoryId": null,
-      "title": "Updated Task Title",
-      "description": "Updated description",
-      "dueDate": "2026-05-10T00:00:00Z",
-      "isCompleted": false,
-      "priority": 2,
-      "status": "InProgress",
-      "visibility": "Private"
-    }
+            "categoryId": null,
+            "title": "lam bai",
+            "description": "Task description here",
+            "dueDate": "2026-04-24T19:00:00Z",
+            "isCompleted": false,
+            "status": "Pending",
+            "visibility": "Public"
+        }

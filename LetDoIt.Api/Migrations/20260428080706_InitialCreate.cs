@@ -16,15 +16,16 @@ namespace LetDoIt.Api.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    UserId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Username = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     DisplayName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     HashedPassword = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    Dob = table.Column<DateOnly>(type: "date", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: true),
                     AvatarUrl = table.Column<string>(type: "text", nullable: true),
                     LastLogin = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -37,9 +38,8 @@ namespace LetDoIt.Api.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ColorCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
@@ -60,8 +60,8 @@ namespace LetDoIt.Api.Migrations
                 {
                     RequestId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SenderId = table.Column<int>(type: "integer", nullable: false),
-                    RecieverId = table.Column<int>(type: "integer", nullable: false),
+                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RecieverId = table.Column<Guid>(type: "uuid", nullable: false),
                     Message = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", maxLength: 20, nullable: false)
@@ -89,8 +89,8 @@ namespace LetDoIt.Api.Migrations
                 {
                     FriendId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    User1Id = table.Column<int>(type: "integer", nullable: false),
-                    User2Id = table.Column<int>(type: "integer", nullable: false),
+                    User1Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    User2Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -116,8 +116,8 @@ namespace LetDoIt.Api.Migrations
                 {
                     NotiId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    SenderId = table.Column<int>(type: "integer", nullable: false),
-                    ReferenceId = table.Column<int>(type: "integer", nullable: false),
+                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReferenceId = table.Column<Guid>(type: "uuid", nullable: false),
                     ReferenceType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Content = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -137,10 +137,9 @@ namespace LetDoIt.Api.Migrations
                 name: "Tasks",
                 columns: table => new
                 {
-                    TaskId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true),
+                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -170,7 +169,7 @@ namespace LetDoIt.Api.Migrations
                 columns: table => new
                 {
                     NotiId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsRead = table.Column<bool>(type: "boolean", nullable: false),
                     ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -197,7 +196,7 @@ namespace LetDoIt.Api.Migrations
                 {
                     SessionId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TaskId = table.Column<int>(type: "integer", nullable: false),
+                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
                     StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Duration = table.Column<int>(type: "integer", nullable: false),
@@ -220,7 +219,7 @@ namespace LetDoIt.Api.Migrations
                 {
                     ScheduleId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TaskId = table.Column<int>(type: "integer", nullable: false),
+                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
                     TargetDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
                     EndTime = table.Column<TimeSpan>(type: "interval", nullable: false),

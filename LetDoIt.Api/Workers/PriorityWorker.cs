@@ -23,7 +23,7 @@ namespace LetDoIt.Api.Workers
 
                     // 1. TỐI ƯU DB: Chỉ lấy Task chưa xong VÀ bắt buộc có DueDate
                     var tasks = db.Tasks
-                        .Where(t => !t.IsCompleted && t.DueDate != null)
+                        .Where(t => !t.IsCompleted)
                         .ToList();
 
                     // 2. Lấy giờ 1 lần duy nhất ở ngoài vòng lặp

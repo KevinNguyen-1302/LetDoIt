@@ -9,10 +9,10 @@ public class Notification
     public int NotiId { get; set; }
 
     [Required]
-    public int SenderId { get; set; }
+    public Guid SenderId { get; set; }
 
     [Required]
-    public int ReferenceId { get; set; }
+    public Guid ReferenceId { get; set; }
 
     [Required]
     [StringLength(20)]

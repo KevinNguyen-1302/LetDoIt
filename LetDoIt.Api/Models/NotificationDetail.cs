@@ -9,7 +9,7 @@ public class NotificationDetail
     public int NotiId { get; set; }
 
     [Key, Column(Order = 1)]
-    public int UserId { get; set; }
+    public Guid UserId { get; set; }
 
     [Required]
     public bool IsRead { get; set; } = false; // Mặc định là chưa đọc (Bit trong DB)
