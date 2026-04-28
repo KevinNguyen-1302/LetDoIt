@@ -9,10 +9,10 @@ public class FriendRequest
     public int RequestId { get; set; }
 
     [Required]
-    public int SenderId { get; set; }
+    public Guid SenderId { get; set; }
 
     [Required]
-    public int RecieverId { get; set; } // Giữ nguyên tên 'Reciever' theo bản thiết kế của bạn
+    public Guid RecieverId { get; set; } // Giữ nguyên tên 'Reciever' theo bản thiết kế của bạn
 
     [StringLength(200)]
     public string? Message { get; set; }

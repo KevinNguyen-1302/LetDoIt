@@ -3,7 +3,10 @@ using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using LetDoIt.Api.Workers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 
 
@@ -17,8 +20,25 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<LetDoItContext>(options => options.UseNpgsql(connectionString));
 
-builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["AppSettings:Audience"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
+        }; 
+    });
 
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -38,6 +58,8 @@ app.MapGet("/health/db", async (LetDoItContext db) =>
 });
 
 app.MapGet("/", () => "LetDoIt API is running");
+
+app.UseAuthorization();
 
 app.MapControllers();
 

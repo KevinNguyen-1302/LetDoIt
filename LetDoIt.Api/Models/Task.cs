@@ -5,10 +5,10 @@ namespace LetDoIt.Api.Models;
 public class Task
 {
     [Key]
-    public int TaskId { get; set; }
+    public Guid TaskId { get; set; }
     [Required]
-    public int UserId { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid UserId { get; set; }
+    public Guid? CategoryId { get; set; }
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = null!;

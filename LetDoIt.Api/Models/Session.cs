@@ -10,7 +10,7 @@ public class Session
 
     [Required]
     [ForeignKey("Task")]
-    public int TaskId { get; set; }
+    public Guid TaskId { get; set; }
 
     [Required]
     public DateTime StartTime { get; set; } = DateTime.UtcNow; // Mặc định là thời điểm tạo Session

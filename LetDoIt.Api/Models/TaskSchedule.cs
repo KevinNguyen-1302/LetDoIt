@@ -10,7 +10,7 @@ public class TaskSchedule
 
     [Required]
     [ForeignKey(nameof(Task))]
-    public int TaskId { get; set; }
+    public Guid TaskId { get; set; }
 
     [Required]
     public DateTime TargetDate { get; set; }

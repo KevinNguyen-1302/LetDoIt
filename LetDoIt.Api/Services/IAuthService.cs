@@ -1,9 +1,13 @@
-﻿namespace LetDoIt.Api.Services
+﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.Models;
+
+namespace LetDoIt.Api.Services
 {
     public interface IAuthService
     {
-        Task<bool> RegisterAsync();
-        Task<string?> LoginAsync(string username, string password);
+        Task<Users?> RegisterAsync(RegisterRequest request);
+        Task<string?> LoginAsync(LoginRequest request);
+        Task<Users?> GetUserByIdAsync(Guid userId);
 
     }
 }

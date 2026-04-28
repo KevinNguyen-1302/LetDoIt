@@ -5,8 +5,8 @@ namespace LetDoIt.Api.Models;
 public class Category
 {
     [Key]
-    public int CategoryId { get; set; }
-    public required int UserId { get; set; }
+    public Guid CategoryId { get; set; }
+    public required Guid UserId { get; set; }
 
     [Required]
     [MaxLength(100)]

@@ -5,49 +5,48 @@ using LetDoIt.Api.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LetDoIt.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IAuthService authService) : ControllerBase
     {
         public static Users user = new ();
 
         [HttpPost("register")]
-        public ActionResult<Users> Register(RegisterRequest request)
+        public async Task<ActionResult<Users>> Register(RegisterRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            user = new Users
+            var user = await authService.RegisterAsync(request);
+            if (user is null) 
             {
-                Username = request.Username,
-                Email = request.Email,
-                DisplayName = request.DisplayName,
-                Dob = DateOnly.FromDateTime(request.Dob),
-                PhoneNumber = request.PhoneNumber,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            user.HashedPassword = new PasswordHasher<Users>().HashPassword(user, request.Password);
-
+                return BadRequest("Username or email already exists.");
+            }
             return Ok(user);
         }
 
         [HttpPost("login")]
-        public ActionResult<string> Login(LoginRequest request)
+        public async Task<ActionResult<string>> Login(LoginRequest request)
         {
-            if (user.Username != request.Username && user.Email != request.Email)
+            var token = await authService.LoginAsync(request);
+            if(token is null)
             {
-                return BadRequest("Invalid username or email.");
+                return BadRequest("Invalid username or password.");
             }
-            if (new PasswordHasher<Users>().VerifyHashedPassword(user, user.HashedPassword, request.Password) == PasswordVerificationResult.Failed)
-            {
-                return BadRequest("Wrong password.");
-            }
-            string token = "successfully logged in";
             return Ok(token);
         }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult AuthenticatedOnlyEndpoint()
+        {
+            return Ok("You are authenticated!");
+        }
+
     }
 }

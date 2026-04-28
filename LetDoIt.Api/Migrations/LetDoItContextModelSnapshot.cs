@@ -17,18 +17,16 @@ namespace LetDoIt.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("LetDoIt.Api.Models.Category", b =>
                 {
-                    b.Property<int>("CategoryId")
+                    b.Property<Guid>("CategoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CategoryId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ColorCode")
                         .IsRequired()
@@ -40,8 +38,8 @@ namespace LetDoIt.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("CategoryId");
 
@@ -61,11 +59,11 @@ namespace LetDoIt.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("User1Id")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("User1Id")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("User2Id")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("User2Id")
+                        .HasColumnType("uuid");
 
                     b.HasKey("FriendId");
 
@@ -92,11 +90,11 @@ namespace LetDoIt.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("RecieverId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("RecieverId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("SenderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Status")
                         .HasMaxLength(20)
@@ -127,16 +125,16 @@ namespace LetDoIt.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ReferenceId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ReferenceType")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("SenderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("NotiId");
 
@@ -151,8 +149,8 @@ namespace LetDoIt.Api.Migrations
                         .HasColumnType("integer")
                         .HasColumnOrder(0);
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
                         .HasColumnOrder(1);
 
                     b.Property<bool>("IsRead")
@@ -189,8 +187,8 @@ namespace LetDoIt.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("integer");
 
-                    b.Property<int>("TaskId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("SessionId");
 
@@ -201,14 +199,12 @@ namespace LetDoIt.Api.Migrations
 
             modelBuilder.Entity("LetDoIt.Api.Models.Task", b =>
                 {
-                    b.Property<int>("TaskId")
+                    b.Property<Guid>("TaskId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TaskId"));
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -232,8 +228,8 @@ namespace LetDoIt.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Visibility")
                         .HasColumnType("integer");
@@ -267,8 +263,8 @@ namespace LetDoIt.Api.Migrations
                     b.Property<DateTime>("TargetDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("TaskId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("ScheduleId");
 
@@ -279,11 +275,9 @@ namespace LetDoIt.Api.Migrations
 
             modelBuilder.Entity("LetDoIt.Api.Models.Users", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AvatarUrl")
                         .HasColumnType("text");

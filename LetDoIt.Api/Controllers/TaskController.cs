@@ -17,7 +17,7 @@ namespace LetDoIt.Api.Controllers
             => Ok(await _service.GetAllTasksAsync());
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Models.Task?>> GetTaskById(int id)
+        public async Task<ActionResult<Models.Task?>> GetTaskById(Guid id)
         {
             var task = await _service.GetTaskByIdAsync(id);
             if (task is null) return NotFound("Khong the tim thay task voi Id chi dinh");
@@ -25,7 +25,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<Models.Task?>> GetTaskByUserId(int userId)
+        public async Task<ActionResult<Models.Task?>> GetTaskByUserId(Guid userId)
         {
             var tasks = await _service.GetTaskByUserId(userId);
             if (tasks is null) return NotFound("Khong the tim thay task voi UserId chi dinh");
@@ -40,7 +40,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTask(int id, UpdateTaskRequest task)
+        public async Task<ActionResult> UpdateTask(Guid id, UpdateTaskRequest task)
         {
             var updated = await _service.UpdateTaskAsync(id, task);
             if (!updated) return NotFound("Khong the tim thay task voi Id chi dinh");
@@ -48,7 +48,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteTask(int id)
+        public async Task<ActionResult> DeleteTask(Guid id)
         {
             var deleted = await _service.DeleteTaskAsync(id);
             if (!deleted) return NotFound("Khong the tim thay task voi Id chi dinh");
@@ -57,7 +57,7 @@ namespace LetDoIt.Api.Controllers
 
         // Accept priority in the request body as JSON. If omitted (null) service will auto-calculate.
         [HttpPut("{id}/priority")]
-        public async Task<ActionResult> ChangePriority(int id, [FromBody] ChangePriorityRequest? request)
+        public async Task<ActionResult> ChangePriority(Guid id, [FromBody] ChangePriorityRequest? request)
         {
             var changed = await _service.ChangePriority(id, request?.Priority);
             if (!changed) return NotFound("Khong the tim thay task voi Id chi dinh");
