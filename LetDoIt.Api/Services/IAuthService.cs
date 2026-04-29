@@ -6,7 +6,8 @@ namespace LetDoIt.Api.Services
     public interface IAuthService
     {
         Task<Users?> RegisterAsync(RegisterRequest request);
-        Task<string?> LoginAsync(LoginRequest request);
+        Task<TokenResponseDto?> LoginAsync(LoginRequest request);
+        Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request);
         Task<Users?> GetUserByIdAsync(Guid userId);
 
     }

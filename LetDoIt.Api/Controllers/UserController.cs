@@ -1,14 +1,7 @@
 ﻿using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
-using LetDoIt.Api.Data;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 
 namespace LetDoIt.Api.Controllers
@@ -31,14 +24,14 @@ namespace LetDoIt.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(LoginRequest request)
+        public async Task<ActionResult<TokenResponseDto>> Login(LoginRequest request)
         {
-            var token = await authService.LoginAsync(request);
-            if(token is null)
+            var result = await authService.LoginAsync(request);
+            if(result is null)
             {
                 return BadRequest("Invalid username or password.");
             }
-            return Ok(token);
+            return Ok(result);
         }
 
         [Authorize]
@@ -48,5 +41,15 @@ namespace LetDoIt.Api.Controllers
             return Ok("You are authenticated!");
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto request)
+        {
+            var result = await authService.RefreshTokenAsync(request);
+            if (result is null || result.AccessToken is null || result.RefreshToken is null)
+            {
+                return BadRequest("Invalid refresh token.");
+            }
+            return Ok(result);
+        }
     }
 }
