@@ -5,6 +5,7 @@ using LetDoIt.Api.Models;
 using LetDoIt.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Services;
 
@@ -46,10 +47,21 @@ public class TaskService : ITaskService
         else return Priority.Low;                               // Còn xa
     }
 
-    public async Task<Models.Task> CreateTaskAsync(Models.Task task)
+    public async Task<Models.Task> CreateTaskAsync(Models.Task task, ClaimsPrincipal user)
     {
+        // Extract user ID from claims
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
+        }
+
+        // Assign user ID to the task
+        task.UserId = userId;
         _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
+
         return task;
     }
 
@@ -163,5 +175,40 @@ public class TaskService : ITaskService
                 return false;
             }
         
+    }
+
+    public Task<List<GetTaskResponse>> GetTasksByCategoryIdAsync(Guid categoryId)
+    {
+        throw new NotImplementedException();
+    }
+
+
+    public async Task<List<GetTaskResponse>> GetMyTask(ClaimsPrincipal user)
+    {
+        // Extract user ID from claims
+        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (currentUserId == null || !Guid.TryParse(currentUserId, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
+        }
+
+        // Query DB based on token ID
+        var tasks = await _context.Tasks
+            .Where(t => t.UserId == userId)
+            .Select(t => new GetTaskResponse
+            {
+                CategoryId = t.CategoryId,
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = (int)t.Priority,
+                Status = t.Status,
+                Visibility = t.Visibility
+            })
+            .ToListAsync();
+
+        return tasks;
     }
 }

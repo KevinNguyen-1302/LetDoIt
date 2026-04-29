@@ -68,6 +68,7 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
         // Use correct key names and validate presence

@@ -21,7 +21,7 @@ namespace LetDoIt.Api.Workers
                 {
                     var db = scope.ServiceProvider.GetRequiredService<LetDoItContext>();
 
-                    // 1. TỐI ƯU DB: Chỉ lấy Task chưa xong VÀ bắt buộc có DueDate
+                    // 1. TỐI ƯU DB: Chỉ lấy Task chưa xong
                     var tasks = db.Tasks
                         .Where(t => !t.IsCompleted)
                         .ToList();
