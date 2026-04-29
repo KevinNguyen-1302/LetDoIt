@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -32,10 +34,11 @@ namespace LetDoIt.Api.Controllers
             return Ok(tasks);
         }
 
-        [HttpPost]
+        [Authorize(Roles = "User")]
+        [HttpPost("create-task")]
         public async Task<ActionResult<Models.Task>> CreateTask(Models.Task task)
         {
-            var createdTask = await _service.CreateTaskAsync(task);
+            var createdTask = await _service.CreateTaskAsync(task, User);
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.TaskId }, createdTask);
         }
 
@@ -62,6 +65,13 @@ namespace LetDoIt.Api.Controllers
             var changed = await _service.ChangePriority(id, request?.Priority);
             if (!changed) return NotFound("Khong the tim thay task voi Id chi dinh");
             return NoContent();
+        }
+        [Authorize(Roles = "User")]
+        [HttpGet("my-tasks")]
+        public async Task<ActionResult<List<GetTaskResponse>>> GetMyTask()
+        {
+            var tasks = await _service.GetMyTask(User);
+            return Ok(tasks);
         }
     }
 }

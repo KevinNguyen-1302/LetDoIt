@@ -2,12 +2,11 @@ using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace LetDoIt.Api.Services;
@@ -19,7 +18,7 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         throw new NotImplementedException();
     }
 
-    public async Task<string?> LoginAsync(LoginRequest request)
+    public async Task<TokenResponseDto?> LoginAsync(LoginRequest request)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username && u.Email == request.Email);
         if (user is null)
@@ -32,8 +31,16 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         }
         user.LastLogin = DateTime.UtcNow;
         await context.SaveChangesAsync();
+        return await CreateTokenResponse(user);
+    }
 
-        return CreateToken(user);
+    private async Task<TokenResponseDto> CreateTokenResponse(Users user)
+    {
+        return new TokenResponseDto
+        {
+            AccessToken = CreateToken(user),
+            RefreshToken = await GenerateAndSaveRefreshTokenAsync(user)
+        };
     }
 
     public async Task<Users?> RegisterAsync(RegisterRequest request)
@@ -62,12 +69,52 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
 
         return user;
     }
+
+    public async Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request)
+    {
+        var user = await ValidateRefreshTokenAsync(request.UserId, request.RefreshToken);
+        if (user == null)
+        {
+            return null;
+        }
+        return await CreateTokenResponse(user);
+    }
+
+    private async Task<Users?> ValidateRefreshTokenAsync(Guid userId, string refreshToken)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return null; // Invalid refresh token
+        }
+        return user;
+    }
+
+    private string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
+        }
+    }
+
+    private async Task<String> GenerateAndSaveRefreshTokenAsync(Users user)
+    {
+        var refreshToken = GenerateRefreshToken();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Refresh token valid for 7 days
+        await context.SaveChangesAsync();
+        return refreshToken;
+    }
     private string CreateToken(Users user)
     {
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
         // Use correct key names and validate presence

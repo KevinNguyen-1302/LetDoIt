@@ -28,5 +28,8 @@ public class Users
     public string? AvatarUrl { get; set; }
     public DateTime LastLogin { get; set; } = DateTime.UtcNow;
     public virtual ICollection<Task> Tasks { get; set; } = new HashSet<Task>();
+    public string Role { get; set; } = "User"; // Default role is "User"
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 }
 
