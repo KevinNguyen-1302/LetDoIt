@@ -1,0 +1,19 @@
+$kind: http-request
+name: Create Session
+url: "{{baseUrl}}/api/sessions/completed"
+method: POST
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: json
+  content: "{\r
+
+    \    \"startTime\": \"2026-05-04T16:04:04.803811+07:00\",\r
+
+    \    \"endTime\": \"2026-05-04T16:29:04.803811+07:00\",\r
+
+    \    \"duration\": 26\r
+
+    }"
+order: 1777883576984
