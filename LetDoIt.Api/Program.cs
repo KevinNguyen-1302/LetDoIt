@@ -41,6 +41,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddScoped<ISessionService, SessionService>();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
