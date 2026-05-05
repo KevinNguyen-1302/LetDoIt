@@ -26,10 +26,20 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory([FromBody] Category category)
+        public async Task<ActionResult<Category>> CreateCategory(GetCategoryResponse category)
         {
             var createdCategory = await _service.CreateCategoryAsync(category, User);
             return CreatedAtAction(nameof(GetCategories), new { id = createdCategory.CategoryId }, createdCategory);
+        }
+
+        [Authorize]
+        [HttpGet("stats")]
+        public async Task<ActionResult<IEnumerable<CategoryCountDto>>> GetStatsWithDapper()
+        {
+            var userId = Guid.Parse(User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?
+                                                                                 .Value ?? throw new UnauthorizedAccessException("UserId not found"));
+            var stats = await _service.GetStatsWithDapperAsync(userId);
+            return Ok(stats);
         }
     }
 }
