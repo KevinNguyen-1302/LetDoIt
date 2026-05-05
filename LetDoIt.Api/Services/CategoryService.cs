@@ -1,28 +1,35 @@
-﻿using LetDoIt.Api.Data;
+﻿using Dapper;
+using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Services
 {
     public class CategoryService : ICategoryService
     {
         private readonly LetDoItContext _context;
-        public CategoryService(LetDoItContext context)
+        private readonly string _connectionString;
+        public CategoryService(LetDoItContext context, IConfiguration configuration)
         {
             _context = context;
+            _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
         }
 
-        public async Task<Category> CreateCategoryAsync(Category category, ClaimsPrincipal user)
+        public async Task<Category> CreateCategoryAsync(GetCategoryResponse category, ClaimsPrincipal user)
         {
             var userId = GetUserId(user);
-
-            category.UserId = userId;
-            _context.Categories.Add(category);
+            var newCategory = new Category
+            {
+                Name = category.Name,
+                ColorCode = category.ColorCode,
+                UserId = userId
+            };
+            _context.Categories.Add(newCategory);
             await _context.SaveChangesAsync();
-            return category;
+            return newCategory;
         }
 
         public async Task<List<GetCategoryResponse>> GetAllCategoriesAsync(ClaimsPrincipal user)
@@ -37,6 +44,18 @@ namespace LetDoIt.Api.Services
                 })
                 .ToListAsync();
             return tasks;
+        }
+        //SỬ DỤNG DAPPER ĐỂ LẤY SỐ LƯỢNG TASK TRONG MỖI CATEGORY
+        public async Task<IEnumerable<CategoryCountDto>> GetStatsWithDapperAsync(Guid userId)
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            var sql = @"SELECT c.""Name"" as CategoryName, COUNT(t.""TaskId"") as TaskCount 
+                    FROM ""Categories"" c 
+                    LEFT JOIN ""Tasks"" t ON c.""CategoryId"" = t.""CategoryId""
+                    WHERE c.""UserId"" = @UserId
+                    GROUP BY c.""Name""";
+
+            return await connection.QueryAsync<CategoryCountDto>(sql, new { UserId = userId });
         }
 
         public async Task<Category> UpdateCategoryAsync(Guid CategoryId, GetCategoryResponse category, ClaimsPrincipal user)
@@ -84,7 +103,5 @@ namespace LetDoIt.Api.Services
             }
             return userId;
         }
-
-        
     }
 }

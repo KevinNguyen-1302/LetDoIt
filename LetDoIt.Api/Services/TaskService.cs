@@ -58,11 +58,22 @@ public class TaskService : ITaskService
         }
 
         // Assign user ID to the task
-        task.UserId = userId;
-        _context.Tasks.Add(task);
+        var newTask = new Models.Task
+        {
+            Title = task.Title,
+            Description = task.Description,
+            DueDate = task.DueDate,
+            IsCompleted = task.IsCompleted,
+            Priority = CalculatePriority(task.DueDate),
+            Status = task.Status,
+            Visibility = task.Visibility,
+            CategoryId = task.CategoryId,
+            UserId = userId
+        };
+        _context.Tasks.Add(newTask);
         await _context.SaveChangesAsync();
 
-        return task;
+        return newTask;
     }
 
     public async Task<bool> DeleteTaskAsync(Guid taskId)

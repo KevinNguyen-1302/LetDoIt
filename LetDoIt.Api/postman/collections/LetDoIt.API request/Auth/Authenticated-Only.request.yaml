@@ -1,0 +1,8 @@
+$kind: http-request
+name: Authenticated Only
+url: '{{baseUrl}}/api/user'
+method: GET
+headers:
+  - key: Authorization
+    value: 'Bearer {{token}}'
+order: 4000

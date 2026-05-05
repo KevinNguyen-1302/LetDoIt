@@ -1,0 +1,15 @@
+$kind: http-request
+name: Create Category
+url: '{{baseUrl}}/api/category'
+method: POST
+headers:
+  - key: Authorization
+    value: 'Bearer {{token}}'
+body:
+  type: json
+  content: |-
+    {
+      "userid": "{{userId}}",
+      "name": "Viec nha"
+    }
+order: 1000
