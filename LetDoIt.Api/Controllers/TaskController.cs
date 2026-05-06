@@ -1,9 +1,7 @@
-﻿using LetDoIt.Api.Services;
-using Microsoft.AspNetCore.Mvc;
-using LetDoIt.Api.DTOs;
-using LetDoIt.Api.Models;
+﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LetDoIt.Api.Controllers
 {
