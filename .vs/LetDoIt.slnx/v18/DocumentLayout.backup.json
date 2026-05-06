@@ -1,0 +1,272 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Porfolio\\LetDoIt\\LetDoIt\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\dtos\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\dtos\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\dtos\\categorycountdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\dtos\\categorycountdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\controllers\\categorycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\controllers\\sessionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\controllers\\sessionscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\controllers\\taskcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\controllers\\taskcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\taskservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\taskservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\itaskservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\itaskservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\categoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\categoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\sessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\sessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\models\\session.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\models\\session.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\dtos\\createsessionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\dtos\\createsessionrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\isessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\isessionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\services\\icategoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\services\\icategoryservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|d:\\porfolio\\letdoit\\letdoit\\letdoit.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{752121BB-8433-B804-FA62-D673E3C96575}|LetDoIt.Api\\LetDoIt.Api.csproj|solutionrelative:letdoit.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Controllers\\UserController.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\UserController.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABcAAABcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-06T01:43:37.233Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "TaskController.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\TaskController.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Controllers\\TaskController.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\TaskController.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Controllers\\TaskController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T10:16:16.011Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CategoryController.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\CategoryController.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Controllers\\CategoryController.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\CategoryController.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Controllers\\CategoryController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T09:16:41.007Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SessionsController.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\SessionsController.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Controllers\\SessionsController.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Controllers\\SessionsController.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Controllers\\SessionsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T08:11:59.927Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "CategoryCountDto.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\CategoryCountDto.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\DTOs\\CategoryCountDto.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\CategoryCountDto.cs",
+              "RelativeToolTip": "LetDoIt.Api\\DTOs\\CategoryCountDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T09:09:04.318Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "RegisterRequest.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\RegisterRequest.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\DTOs\\RegisterRequest.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\RegisterRequest.cs",
+              "RelativeToolTip": "LetDoIt.Api\\DTOs\\RegisterRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T05:53:50.612Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "TaskService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\TaskService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\TaskService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\TaskService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\TaskService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T02:34:39.05Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ITaskService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ITaskService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\ITaskService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ITaskService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\ITaskService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T02:37:59.922Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CreateSessionRequestDto.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\CreateSessionRequestDto.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\DTOs\\CreateSessionRequestDto.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\DTOs\\CreateSessionRequestDto.cs",
+              "RelativeToolTip": "LetDoIt.Api\\DTOs\\CreateSessionRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAwAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T07:55:00.23Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SessionService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\SessionService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\SessionService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\SessionService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\SessionService.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAADwv0UAAABZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T08:00:28.666Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CategoryService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\CategoryService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\CategoryService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\CategoryService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\CategoryService.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAgwCwAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T08:02:23.448Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Session.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Models\\Session.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Models\\Session.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Models\\Session.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Models\\Session.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAkwBMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T06:39:07.339Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "ISessionService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ISessionService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\ISessionService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ISessionService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\ISessionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T07:57:21.956Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "ICategoryService.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ICategoryService.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Services\\ICategoryService.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Services\\ICategoryService.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Services\\ICategoryService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAoAAABWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T08:02:41.46Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Program.cs",
+              "RelativeDocumentMoniker": "LetDoIt.Api\\Program.cs",
+              "ToolTip": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\Program.cs",
+              "RelativeToolTip": "LetDoIt.Api\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T08:26:40.707Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

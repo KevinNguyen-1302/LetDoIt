@@ -1,0 +1,23 @@
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
+
+namespace LetDoIt.Api.Data;
+
+public static class DataExtensions
+{
+        public static void MigrateDb(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<LetDoItContext>();
+        dbContext.Database.Migrate();
+    }
+}
+
+public class Users : IdentityUser<int>
+{
+    // remove duplicate Id-like int property (use Id from IdentityUser<int>)
+    [Required, MaxLength(100)]
+    public string DisplayName { get; set; } = null!;
+    // other props...
+}

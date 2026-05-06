@@ -45,10 +45,10 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
 
     public async Task<Users?> RegisterAsync(RegisterRequest request)
     {
-        if (await context.Users.AnyAsync(u => u.Username == request.Username))
-        {
-            return null; // Username already exists
-        }
+        // if (await context.Users.AnyAsync(u => u.Username == request.Username))
+        // {
+        //     return null; // Username already exists
+        // }
         var user = new Users
         {
             UserId = Guid.NewGuid(),

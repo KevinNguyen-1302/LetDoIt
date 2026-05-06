@@ -1,0 +1,33 @@
+﻿using LetDoIt.Api.Data;
+using LetDoIt.Api.Models;
+using LetDoIt.Api.Services;
+using Microsoft.EntityFrameworkCore;
+
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddValidation();
+builder.Services.AddControllers();
+builder.Services.AddScoped<TaskServices>();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddDbContext<LetDoItContext>(options =>
+    options.UseNpgsql(connectionString));
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.MapGet("/health/db", async (LetDoItContext db) =>
+{
+    bool canConnect = await db.Database.CanConnectAsync();
+    return canConnect ? Results.Ok("DB connected") : Results.Problem("DB connection failed");
+});
+
+app.MapGet("/", () => "LetDoIt API is running");
+
+
+app.MigrateDb();
+
+app.Run();
