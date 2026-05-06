@@ -53,8 +53,22 @@ builder.Services.AddControllers()
 
 builder.Services.AddHostedService<PriorityWorker>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000", "http://localhost:5173") // Thêm port của React vào đây
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
+app.UseRouting();
+
+app.UseCors("AllowReactApp");
 
 app.MapGet("/health/db", async (LetDoItContext db) =>
 {

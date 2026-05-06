@@ -1,8 +1,9 @@
 ﻿using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -20,7 +21,7 @@ namespace LetDoIt.Api.Controllers
             {
                 return BadRequest("Username or email already exists.");
             }
-            return Ok(user);
+            return CreatedAtAction(nameof(Login), new { username = request.Username }, user);
         }
 
         [HttpPost]
