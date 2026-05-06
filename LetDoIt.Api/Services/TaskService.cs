@@ -131,7 +131,7 @@ public class TaskService : ITaskService
 
     }
 
-    public async Task<List<GetTaskResponse>> GetTaskByUserId(Guid userId)
+    public async Task<List<GetTaskResponse>> GetTasksByUserId(Guid userId)
     {
         return await _context.Tasks
             .Where(t => t.UserId == userId)
