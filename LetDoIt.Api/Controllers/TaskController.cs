@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace LetDoIt.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TaskController : ControllerBase
     {
@@ -26,16 +26,16 @@ namespace LetDoIt.Api.Controllers
             return Ok(task);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<ActionResult<Models.Task?>> GetTaskByUserId(Guid userId)
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<Models.Task?>> GetTasksByUserId(Guid userId)
         {
-            var tasks = await _service.GetTaskByUserId(userId);
+            var tasks = await _service.GetTasksByUserId(userId);
             if (tasks is null) return NotFound("Khong the tim thay task voi UserId chi dinh");
             return Ok(tasks);
         }
 
         [Authorize(Roles = "User")]
-        [HttpPost("create-task")]
+        [HttpPost]
         public async Task<ActionResult<Models.Task>> CreateTask(Models.Task task)
         {
             var createdTask = await _service.CreateTaskAsync(task, User);
@@ -59,7 +59,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         // Accept priority in the request body as JSON. If omitted (null) service will auto-calculate.
-        [HttpPut("{id}/priority")]
+        [HttpPut("{id}")]
         public async Task<ActionResult> ChangePriority(Guid id, [FromBody] ChangePriorityRequest? request)
         {
             var changed = await _service.ChangePriority(id, request?.Priority);
@@ -67,7 +67,7 @@ namespace LetDoIt.Api.Controllers
             return NoContent();
         }
         [Authorize(Roles = "User")]
-        [HttpGet("my-tasks")]
+        [HttpGet]
         public async Task<ActionResult<List<GetTaskResponse>>> GetMyTask()
         {
             var tasks = await _service.GetMyTask(User);

@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LetDoIt.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class SessionsController : ControllerBase
     {
         private readonly ISessionService _service;
         public SessionsController(ISessionService service) => _service = service;
-        [HttpPost("completed")]
+        [HttpPost]
         [Authorize]
         public async Task<ActionResult> SaveSession([FromBody] CreateSessionRequestDto request)
         {
@@ -30,6 +30,6 @@ namespace LetDoIt.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
     }
 }

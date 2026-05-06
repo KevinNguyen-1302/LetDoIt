@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LetDoIt.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace LetDoIt.Api.Controllers
             => Ok(await _service.GetAllCategoriesAsync(User));
 
         [Authorize]
-        [HttpGet("task-counts")]
+        [HttpGet]
         public async Task<ActionResult<List<CategoryCountDto>>> GetCategoryTaskCounts()
             => Ok(await _service.GetCategoryTaskCountsAsync(User));
 
@@ -33,7 +33,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [Authorize]
-        [HttpGet("stats")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryCountDto>>> GetStatsWithDapper()
         {
             var userId = Guid.Parse(User.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?

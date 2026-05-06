@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LetDoIt.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class UserController(IAuthService authService) : ControllerBase
     {
         public static Users user = new ();
 
-        [HttpPost("register")]
+        [HttpPost]
         public async Task<ActionResult<Users>> Register(RegisterRequest request)
         {
             var user = await authService.RegisterAsync(request);
@@ -23,7 +23,7 @@ namespace LetDoIt.Api.Controllers
             return Ok(user);
         }
 
-        [HttpPost("login")]
+        [HttpPost]
         public async Task<ActionResult<TokenResponseDto>> Login(LoginRequest request)
         {
             var result = await authService.LoginAsync(request);
@@ -41,7 +41,7 @@ namespace LetDoIt.Api.Controllers
             return Ok("You are authenticated!");
         }
 
-        [HttpPost("refresh-token")]
+        [HttpPost]
         public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto request)
         {
             var result = await authService.RefreshTokenAsync(request);
