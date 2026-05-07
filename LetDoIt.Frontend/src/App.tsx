@@ -1,11 +1,11 @@
-import { useState } from 'react'
 import Login from './pages/Login'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Register from './pages/Register'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <div className="App">
@@ -17,10 +17,10 @@ function App() {
             <Route path='/register' element={<Register />} />
           </Routes>
         </BrowserRouter>
+        <ToastContainer position="top-right" autoClose={4000} />
+
       </main>
-      
     </div>
-  
   )
 }
 
