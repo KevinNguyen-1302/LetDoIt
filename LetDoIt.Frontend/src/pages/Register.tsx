@@ -13,7 +13,8 @@ const Register = () => {
   const [dob, setDateOfBirth] = useState("");                     //|
   const [password, setPassword] = useState("");                   //|
   const [confirmPassword, setConfirmPassword] = useState("");     //|
-  const [showPassword, setShowPassword] = useState(false);        //Hiển thị mật khẩu hay không, mặc định là ẩn
+
+  const [showPassword, setShowPassword] = useState(false);        //|Hiển thị mật khẩu hay không, mặc định là ẩn
  
   const [step, setStep] = useState(1);
 
@@ -117,7 +118,7 @@ const Register = () => {
           </a>
         </div>
 
-        <div className="w-full sm:max-w-4xl mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+        <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
           <form onSubmit={handleSubmit}>
             <div className="py-8">
               <center>
@@ -128,7 +129,7 @@ const Register = () => {
 
             {/* STEP 1: Username, Email, Password */}
             {step === 1 && (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1">
                 {/* Username Field */}
                 <div className="mb-4">
                   <label
@@ -205,7 +206,7 @@ const Register = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mt-2 p-3 bg-gray-50 rounded-md border border-gray-100">
+                <div className=" p-3 mb-4 bg-gray-50 rounded-md border border-gray-100">
                   <p className="text-[10px] font-bold uppercase text-gray-500 mb-1">Độ bảo mật cần thiết:</p>
                   <RuleItem isPassed={rules.length} text="Ít nhất 8 ký tự" />
                   <RuleItem isPassed={rules.uppercase} text="Ít nhất 1 chữ in hoa" />
@@ -256,7 +257,7 @@ const Register = () => {
 
             {/* STEP 2: Full Name, Phone Number, DOB */}
             {step === 2 && (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1">
                 {/* Full Name Field */}
                 <div className="mb-4">
                   <label
