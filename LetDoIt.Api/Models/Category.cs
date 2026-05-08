@@ -14,6 +14,7 @@ public class Category
 
     [MaxLength(20)]
     public string ColorCode { get; set; } = "#4169e1"; // Default to Royal Blue
+    public string IconName { get; set; } = "folder"; // Default to folder icon
 
     public virtual Users? User { get; set; }
     public virtual ICollection<Task> Tasks { get; set; } = new HashSet<Task>();

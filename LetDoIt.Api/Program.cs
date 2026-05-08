@@ -1,6 +1,4 @@
-using LetDoIt.Api.Controllers;
 using LetDoIt.Api.Data;
-using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using LetDoIt.Api.Workers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
