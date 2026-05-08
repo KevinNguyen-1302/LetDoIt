@@ -14,7 +14,8 @@ namespace LetDoIt.Api.DTOs
 
         [Required]
         [DataType(DataType.Password)]
-        [StringLength(255, MinimumLength = 8)] // Nhớ enforce độ dài tối thiểu
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", 
+        ErrorMessage = "Mật khẩu quá yếu! Cần ít nhất 8 ký tự, 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.")]
         public string Password { get; set; } = null!;
         
         [Required]
