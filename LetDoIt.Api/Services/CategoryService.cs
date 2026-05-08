@@ -25,6 +25,7 @@ namespace LetDoIt.Api.Services
             {
                 Name = category.Name,
                 ColorCode = category.ColorCode,
+                IconName = category.IconName,
                 UserId = userId
             };
             _context.Categories.Add(newCategory);
@@ -35,17 +36,15 @@ namespace LetDoIt.Api.Services
         public async Task<List<GetCategoryResponse>> GetAllCategoriesAsync(ClaimsPrincipal user)
         {
             var userId = GetUserId(user);
-            var tasks = await _context.Categories
-                .Where(c => c.UserId == userId)
-                .Select(c => new GetCategoryResponse
-                {
-                    Name = c.Name,
-                    ColorCode = c.ColorCode
-                })
-                .ToListAsync();
-            return tasks;
+            var connection = _context.Database.GetDbConnection();
+            string sql = @"SELECT ""Name"", ""ColorCode"", ""IconName"" 
+                        FROM ""Categories"" 
+                        WHERE ""UserId"" = @UserId";
+
+            var categories = await connection.QueryAsync<GetCategoryResponse>(sql, new { UserId = userId });
+
+            return categories.ToList();
         }
-        //SỬ DỤNG DAPPER ĐỂ LẤY SỐ LƯỢNG TASK TRONG MỖI CATEGORY
         public async Task<IEnumerable<CategoryCountDto>> GetStatsWithDapperAsync(Guid userId)
         {
             using var connection = new NpgsqlConnection(_connectionString);
@@ -72,7 +71,7 @@ namespace LetDoIt.Api.Services
 
             existingCategory.Name = category.Name;
             existingCategory.ColorCode = category.ColorCode;
-
+            existingCategory.IconName = category.IconName;
             await _context.SaveChangesAsync();
             return existingCategory;
         }
