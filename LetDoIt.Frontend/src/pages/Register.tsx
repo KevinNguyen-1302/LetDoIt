@@ -17,17 +17,61 @@ const Register = () => {
  
   const [step, setStep] = useState(1);//|Quản lý bước của form đăng ký, mặc định là bước 1 (thông tin tài khoản)
 
+  // Validation states for real-time feedback
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
+
   const validateEmail = (email : string) => {
     // Kiểm tra định dạng chuẩn: ten@mien.com
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email);
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    if (value === "") {
+      setEmailError("");
+    } else if (!validateEmail(value)) {
+      setEmailError("Email không hợp lệ!");
+    } else {
+      setEmailError("");
+    }
+  };
+
   const validatePhone = (phone : string) => {
     // Kiểm tra đầu số VN (03, 05, 07, 08, 09) và có đúng 10 số
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})\b/;
-    return phoneRegex.test(phone);
-};
+    const phoneRegex = /^0[35789]\d{8}$/;
+    const isValid = phoneRegex.test(phone);
+    console.log("📞 Phone validation - Input:", phone, "Valid:", isValid);
+    return isValid;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhoneNumber(value);
+    
+    if (value === "") {
+      setPhoneError("");
+    } else if (!validatePhone(value)) {
+      setPhoneError("Số điện thoại không hợp lệ! (10 số, bắt đầu bằng 03, 05, 07, 08, 09)");
+    } else {
+      setPhoneError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    
+    if (value && password !== value) {
+      setPasswordsMatch(false);
+    } else {
+      setPasswordsMatch(true);
+    }
+  };
 
   const handleNext = () => {
     if (!username || !email || !password || !confirmPassword) {
@@ -36,14 +80,17 @@ const Register = () => {
     }
 
     if (!validateEmail(email)) {
+      setEmailError("Email không hợp lệ!");
       toast.warning("Email không hợp lệ!");
       return;
     }
 
     if (password !== confirmPassword) {
+      setPasswordsMatch(false);
       toast.warning("Mật khẩu xác nhận không khớp!");
       return;
     }
+    
     setStep(2);
   };
 
@@ -82,27 +129,34 @@ const Register = () => {
 
   const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
+    console.log("📋 Form submitted - Current step:", step);
 
     if (step === 1) {
+        console.log("📋 Step 1 - Moving to step 2");
         handleNext();
         return; 
     }
 
-    // 1. Kiểm tra định dạng số điện thoại (Nếu user có nhập)
-    // Nếu sđt là bắt buộc thì bỏ dòng if (phoneNumber) đi, check thẳng luôn
-    if (phonenumber && !validatePhone(phonenumber)) {
-        toast.error("Số điện thoại không hợp lệ! Vui lòng nhập số VN (10 số, bắt đầu bằng 03, 05, 07, 08, 09).");
+    console.log("📋 Step 2 - Starting validation");
+    console.log("📋 Phone:", phonenumber, "Display Name:", displayname, "DOB:", dob);
+
+    // Check validation states
+    if (phoneError) {
+        console.warn("❌ Phone has validation error:", phoneError);
+        toast.error(phoneError);
         return;
     }
 
     if (step === 2) {
       // Validate trang 2 trước khi submit
       if (!displayname || !dob) {
+        console.warn("❌ Missing required fields - displayname:", displayname, "dob:", dob);
         toast.warning("Vui lòng điền đầy đủ thông tin cá nhân!");
         return;
       }
 
       try {
+        console.log("🚀 Sending register request to http://localhost:5112/api/user/register");
         const response = await fetch("http://localhost:5112/api/user/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -116,16 +170,19 @@ const Register = () => {
           }),
         });
 
+        console.log("✅ Response received - Status:", response.status);
         const data = await response.json();
 
         if (response.ok) {
+          console.log("✅ Registration successful!");
           navigate("/login");
           toast.success("Đăng ký thành công!");
         } else {
+          console.error("❌ Registration failed:", data.message);
           handleApiError(response.status, data.message);
         }
       } catch (error) {
-        console.error("Lỗi kết nối hoặc hệ thống:", error);
+        console.error("❌ Network error or system error:", error);
         handleApiError(500);
       }
     }
@@ -188,10 +245,11 @@ const Register = () => {
                     name="email"
                     placeholder="Insert your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525]"
+                    onChange={handleEmailChange}
+                    className={`w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525] transition-colors ${emailError ? 'border-red-500 bg-red-50' : 'border-gray-800'}`}
                     required
                   />
+                  {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                 </div>
 
                 {/* Password Field */}
@@ -256,9 +314,9 @@ const Register = () => {
                       name="confirmPassword"
                       placeholder="Confirm your password"
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={handleConfirmPasswordChange}
+                      className={`w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525] transition-colors ${!passwordsMatch && confirmPassword ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                       required
-                      className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525]"
                     />
 
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
@@ -278,6 +336,7 @@ const Register = () => {
                       </button>
                     </div>
                   </div>
+                  {!passwordsMatch && confirmPassword && <p className="text-red-500 text-xs mt-1">Mật khẩu xác nhận không khớp!</p>}
                 </div>
               </div>
             )}
@@ -317,9 +376,10 @@ const Register = () => {
                     name="phoneNumber"
                     placeholder="Insert your phone number"
                     value={phonenumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525]"
+                    onChange={handlePhoneChange}
+                    className={`w-full rounded-md py-2.5 px-4 border text-sm outline-[#f84525] transition-colors ${phoneError ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                   />
+                  {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
                 </div>
 
                 {/* Date of Birth Field */}
