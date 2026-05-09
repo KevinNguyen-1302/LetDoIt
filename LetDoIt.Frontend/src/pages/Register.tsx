@@ -5,7 +5,6 @@ import { toast } from "react-toastify/unstyled";
 
 const Register = () => {
 
-
   const [displayname, setFullName] = useState("");                //|
   const [username, setUsername] = useState("");                   //|
   const [email, setEmail] = useState("");                         //|     
@@ -16,13 +15,31 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);        //|Hiển thị mật khẩu hay không, mặc định là ẩn
  
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1);//|Quản lý bước của form đăng ký, mặc định là bước 1 (thông tin tài khoản)
+
+  const validateEmail = (email : string) => {
+    // Kiểm tra định dạng chuẩn: ten@mien.com
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhone = (phone : string) => {
+    // Kiểm tra đầu số VN (03, 05, 07, 08, 09) và có đúng 10 số
+    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})\b/;
+    return phoneRegex.test(phone);
+};
 
   const handleNext = () => {
     if (!username || !email || !password || !confirmPassword) {
       toast.warning("Vui lòng điền đầy đủ thông tin tài khoản!");
       return;
     }
+
+    if (!validateEmail(email)) {
+      toast.warning("Email không hợp lệ!");
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.warning("Mật khẩu xác nhận không khớp!");
       return;
@@ -37,6 +54,7 @@ const Register = () => {
   const [rules, setRules] = useState({
     length: false,
     uppercase: false,
+    lowercase: false,
     specialChar: false,
     number: false,
   });  
@@ -45,6 +63,7 @@ const Register = () => {
     setRules({
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
       specialChar: /[@$!%*?&]/.test(password),
       number: /\d/.test(password),
     });
@@ -65,8 +84,15 @@ const Register = () => {
     e.preventDefault();
 
     if (step === 1) {
-      handleNext();
-      return;
+        handleNext();
+        return; 
+    }
+
+    // 1. Kiểm tra định dạng số điện thoại (Nếu user có nhập)
+    // Nếu sđt là bắt buộc thì bỏ dòng if (phoneNumber) đi, check thẳng luôn
+    if (phonenumber && !validatePhone(phonenumber)) {
+        toast.error("Số điện thoại không hợp lệ! Vui lòng nhập số VN (10 số, bắt đầu bằng 03, 05, 07, 08, 09).");
+        return;
     }
 
     if (step === 2) {
@@ -210,6 +236,7 @@ const Register = () => {
                   <p className="text-[10px] font-bold uppercase text-gray-500 mb-1">Độ bảo mật cần thiết:</p>
                   <RuleItem isPassed={rules.length} text="Ít nhất 8 ký tự" />
                   <RuleItem isPassed={rules.uppercase} text="Ít nhất 1 chữ in hoa" />
+                  <RuleItem isPassed={rules.lowercase} text="Ít nhất 1 chữ thường" />
                   <RuleItem isPassed={rules.specialChar} text="Ít nhất 1 ký tự đặc biệt (@$!%*?&)" />
                   <RuleItem isPassed={rules.number} text="Ít nhất 1 con số" />
                 </div>
