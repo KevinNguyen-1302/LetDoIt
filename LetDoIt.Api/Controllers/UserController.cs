@@ -3,6 +3,7 @@ using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -39,6 +40,25 @@ namespace LetDoIt.Api.Controllers
         public IActionResult AuthenticatedOnlyEndpoint()
         {
             return Ok("You are authenticated!");
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<UserDto>> Get()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var user = await authService.GetUserByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(new UserDto { UserId = user.UserId, Username = user.Username, Email = user.Email });
         }
 
         [HttpPost]

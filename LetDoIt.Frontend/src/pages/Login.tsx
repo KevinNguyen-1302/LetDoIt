@@ -1,6 +1,7 @@
 import { useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleApiError } from "../utils/toastHelper";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -22,9 +23,20 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
-
-        localStorage.setItem("user", JSON.stringify(data.user));
+        // ✅ Lưu token và refresh token
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        
+        // Decode token để lấy userId
+        try {
+          const decoded: any = jwtDecode(data.accessToken);
+          const userId = decoded.nameid || decoded.sub; // nameid hoặc sub tùy backend
+          if (userId) {
+            localStorage.setItem("userId", userId);
+          }
+        } catch (error) {
+          console.error("Failed to decode token:", error);
+        }
 
         navigate("/");
       } else {

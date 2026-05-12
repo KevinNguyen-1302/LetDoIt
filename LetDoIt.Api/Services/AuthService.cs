@@ -1,3 +1,4 @@
+using Dapper;
 using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
@@ -13,9 +14,15 @@ namespace LetDoIt.Api.Services;
 
 public class AuthService(LetDoItContext context, IConfiguration configuration) : IAuthService
 {
-    public Task<Users?> GetUserByIdAsync(Guid userId)
+    public async Task<Users?> GetUserByIdAsync(Guid userId)
     {
-        throw new NotImplementedException();
+        var connection = context.Database.GetDbConnection();
+        string sql = @"SELECT ""UserId"", ""Username"", ""DisplayName"", ""Email"", ""PhoneNumber"", ""Dob"" 
+                    FROM ""Users"" 
+                    WHERE ""UserId"" = @Id";
+        var user = await connection.QuerySingleOrDefaultAsync<Users>(sql, new { Id = userId });
+
+        return user;
     }
 
     public async Task<TokenResponseDto?> LoginAsync(LoginRequest request)
@@ -45,10 +52,10 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
 
     public async Task<Users?> RegisterAsync(RegisterRequest request)
     {
-        // if (await context.Users.AnyAsync(u => u.Username == request.Username))
-        // {
-        //     return null; // Username already exists
-        // }
+        if (await context.Users.AnyAsync(u => u.Email == request.Email))
+        {
+            return null; // Email already exists
+        }
         var user = new Users
         {
             UserId = Guid.NewGuid(),
@@ -65,6 +72,17 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         context.Users.Add(user);
         user.HashedPassword = new PasswordHasher<Users>().HashPassword(user, request.Password);
 
+        await context.SaveChangesAsync();
+
+        var defaultCategories = new List<Category>
+        {
+        new Category { Name = "Việc nhà", ColorCode = "#FF6B4A", IconName = "Home", UserId = user.UserId },
+        new Category { Name = "Công việc", ColorCode = "#4A90E2", IconName = "Briefcase", UserId = user.UserId },
+        new Category { Name = "Học tập", ColorCode = "#A29BFE", IconName = "Book", UserId = user.UserId },
+        new Category { Name = "Sức khỏe", ColorCode = "#E8FF46", IconName = "Heart", UserId = user.UserId }
+        };
+
+        context.Categories.AddRange(defaultCategories);
         await context.SaveChangesAsync();
 
         return user;

@@ -37,7 +37,7 @@ namespace LetDoIt.Api.Services
         {
             var userId = GetUserId(user);
             var connection = _context.Database.GetDbConnection();
-            string sql = @"SELECT ""Name"", ""ColorCode"", ""IconName"" 
+            string sql = @"SELECT ""CategoryId"", ""Name"", ""ColorCode"", ""IconName"" 
                         FROM ""Categories"" 
                         WHERE ""UserId"" = @UserId";
 

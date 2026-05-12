@@ -1,7 +1,42 @@
 import { Search, Bell, Settings } from 'lucide-react';
 import { Input } from 'antd';
+import { useEffect, useState } from 'react';
 
 const TopNav = () => {
+
+  const [Username, setName] = useState('');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setName('');
+          return;
+        }
+
+        const response = await fetch('http://localhost:5112/api/user/get', {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          console.error('Failed to fetch user:', response.statusText);
+          setName('');
+          return;
+        }
+
+        const data = await response.json();
+        setName(data.username || '');
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        setName('');
+      }
+    };
+
+    fetchUser();
+  }, [])
+
   return (
     <header className="h-20 border-b border-gray-100 flex items-center justify-between px-8 bg-white/50 backdrop-blur-sm z-10 sticky top-0">
       <div className="flex items-center gap-6">
@@ -14,15 +49,6 @@ const TopNav = () => {
               </span>
             </h2>
           </a>
-        </div>
-        <div className="flex gap-4 ml-8 text-sm font-medium text-gray-500">
-          <div className="relative">
-            <span className="text-brand-blue border-b-2 border-brand-blue pb-1 font-bold">Dashboard</span>
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] bg-brand-blue text-white px-1.5 py-0.5 rounded font-sans whitespace-nowrap">Connected</span>
-          </div>
-          <span className="hover:text-gray-900 cursor-pointer transition-colors">Calendar</span>
-          <span className="hover:text-gray-900 cursor-pointer transition-colors">Focus</span>
-          <span className="hover:text-gray-900 cursor-pointer transition-colors">Analytics</span>
         </div>
       </div>
 
@@ -42,7 +68,9 @@ const TopNav = () => {
           <Settings size={20} />
         </button>
         {/* Add greeting message */}
-        
+        <p className="text-gray-600"> 
+          {Username ? `Hello, ${Username}!` : 'You are not logged in.'}
+        </p>
       </div>
     </header>
   );
