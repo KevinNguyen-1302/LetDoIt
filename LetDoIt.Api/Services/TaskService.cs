@@ -38,6 +38,14 @@ public class TaskService : ITaskService
 
     private Priority CalculatePriority(DateTime dueDate)
     {
+        // ✅ Đảm bảo dueDate là UTC trước khi so sánh
+        if (dueDate.Kind != DateTimeKind.Utc)
+        {
+            dueDate = dueDate.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(dueDate, DateTimeKind.Utc)
+                : dueDate.ToUniversalTime();
+        }
+
         var now = DateTime.UtcNow;
         var daysRemaining = (dueDate - now).TotalDays;
         Console.WriteLine($"DEBUG: Hiện tại là {now}, DueDate là {dueDate}, còn lại {daysRemaining} ngày");
@@ -57,14 +65,25 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
 
+        // ✅ Đảm bảo DueDate là UTC
+        var dueDate = task.DueDate;
+        if (dueDate.Kind == DateTimeKind.Unspecified)
+        {
+            dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
+        }
+        else if (dueDate.Kind == DateTimeKind.Local)
+        {
+            dueDate = dueDate.ToUniversalTime();
+        }
+
         // Assign user ID to the task
         var newTask = new Models.Task
         {
             Title = task.Title,
             Description = task.Description,
-            DueDate = task.DueDate,
+            DueDate = dueDate,
             IsCompleted = task.IsCompleted,
-            Priority = CalculatePriority(task.DueDate),
+            Priority = CalculatePriority(dueDate),
             Status = task.Status,
             Visibility = task.Visibility,
             CategoryId = task.CategoryId,
@@ -162,9 +181,20 @@ public class TaskService : ITaskService
         {return false;}
         else
         {
+            // ✅ Đảm bảo DueDate là UTC
+            var dueDate = task.DueDate;
+            if (dueDate.Kind == DateTimeKind.Unspecified)
+            {
+                dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
+            }
+            else if (dueDate.Kind == DateTimeKind.Local)
+            {
+                dueDate = dueDate.ToUniversalTime();
+            }
+
             existingTask.Title = task.Title;
             existingTask.Description = task.Description;
-            existingTask.DueDate = task.DueDate;
+            existingTask.DueDate = dueDate;
             existingTask.IsCompleted = task.IsCompleted;
             existingTask.Priority = CalculatePriority(existingTask.DueDate);
             existingTask.Status = task.Status;
