@@ -1,4 +1,4 @@
-import { Search, Bell, Settings } from 'lucide-react';
+import { Search, Bell, Settings, LogOut } from 'lucide-react';
 import { Input } from 'antd';
 import { useEffect, useState } from 'react';
 
@@ -37,6 +37,11 @@ const TopNav = () => {
     fetchUser();
   }, [])
 
+  const handleLogout = () => {
+  localStorage.clear(); // Dọn sạch kho chứa
+  window.location.href = "/login";
+  };
+
   return (
     <header className="h-20 border-b border-gray-100 flex items-center justify-between px-8 bg-white/50 backdrop-blur-sm z-10 sticky top-0">
       <div className="flex items-center gap-6">
@@ -71,6 +76,12 @@ const TopNav = () => {
         <p className="text-gray-600"> 
           {Username ? `Hello, ${Username}!` : 'You are not logged in.'}
         </p>
+        <button 
+        onClick={handleLogout} 
+        className="px-4 bg-[#f82b2b] text-black py-3 rounded-full flex items-center justify-center gap-2 font-bold my-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black ">
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
       </div>
     </header>
   );

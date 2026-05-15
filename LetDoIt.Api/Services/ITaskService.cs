@@ -16,5 +16,6 @@ namespace LetDoIt.Api.Services
         Task<bool> ChangePriority(Guid taskId, Priority? priority);
         Task<List<GetTaskResponse>> GetTasksByCategoryIdAsync(Guid categoryId);
         Task<List<GetTaskResponse>> GetMyTask(ClaimsPrincipal user);
+        Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user);
     }
 }

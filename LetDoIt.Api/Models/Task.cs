@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using LetsDoIt.Models;
 
 namespace LetDoIt.Api.Models;
 
@@ -17,22 +19,16 @@ public class Task
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; } = false; // Default to not completed
     public Priority Priority { get; set; } = Priority.Medium; // Default to Medium
-    [Required]
-    public Status Status { get; set; } = Status.Pending; // Default to Pending
+    
+    public Guid? ColumnId { get; set; } // Foreign Key to Column.Id (nullable for now)
+
+    [ForeignKey("ColumnId")]
+    public virtual Column? Column { get; set; }
     [Required]
     public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
 
     public virtual Users? User { get; set; }
     public virtual Category? Category { get; set; }
-}
-
-public enum Status
-{
-    Pending = 1,
-    InProgress = 2,
-    Completed = 3,
-    Late = 4,
-    Canceled = 5
 }
 
 public enum TaskVisibility

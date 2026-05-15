@@ -24,7 +24,7 @@ namespace LetDoIt.Api.Controllers
             return Ok(task);
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet]
         public async Task<ActionResult<Models.Task?>> GetTasksByUserId(Guid userId)
         {
             var tasks = await _service.GetTasksByUserId(userId);
@@ -70,6 +70,15 @@ namespace LetDoIt.Api.Controllers
         {
             var tasks = await _service.GetMyTask(User);
             return Ok(tasks);
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPut("{id}")]
+        public async Task<ActionResult> MoveTask(Guid id, [FromBody] MoveTaskRequest request)
+        {
+            var moved = await _service.MoveTask(id, request.NewColumnId, User);
+            if (!moved) return NotFound("Khong the tim thay task voi Id chi dinh hoac ColumnId khong hop le");
+            return NoContent();
         }
     }
 }
