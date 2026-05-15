@@ -13,7 +13,7 @@ namespace LetDoIt.Api.DTOs
         public DateTime DueDate { get; set; }
         public bool IsCompleted { get; set; } = false; // Default to not completed
         public int Priority { get; set; } = 3; // Default to Medium
-        public Status Status { get; set; } = Status.Pending; // Default to Pending
+        public string Status { get; set; } = "Pending"; // Default to Pending
         public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
     }
 }

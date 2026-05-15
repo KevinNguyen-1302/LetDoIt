@@ -72,3 +72,7 @@ export const logout = () => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userId');
 };
+
+export const getCurrentUserId = () => {
+  return localStorage.getItem('userId');
+};

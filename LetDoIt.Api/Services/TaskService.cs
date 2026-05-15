@@ -49,10 +49,10 @@ public class TaskService : ITaskService
         var now = DateTime.UtcNow;
         var daysRemaining = (dueDate - now).TotalDays;
         Console.WriteLine($"DEBUG: Hiện tại là {now}, DueDate là {dueDate}, còn lại {daysRemaining} ngày");
-        if (daysRemaining <= 1) return Priority.Urgent;   // Sát nút (trong 24h)
+        if (daysRemaining <= 1) return Priority.Urgent;        // Sát nút (trong 24h)
         else if (daysRemaining <= 3) return Priority.High;     // Sắp tới (trong 3 ngày)
         else if (daysRemaining <= 7) return Priority.Medium;   // Sắp tới (trong 1 tuần)
-        else return Priority.Low;                               // Còn xa
+        else return Priority.Low;                              // Còn xa
     }
 
     public async Task<Models.Task> CreateTaskAsync(Models.Task task, ClaimsPrincipal user)
@@ -84,10 +84,10 @@ public class TaskService : ITaskService
             DueDate = dueDate,
             IsCompleted = task.IsCompleted,
             Priority = CalculatePriority(dueDate),
-            Status = task.Status,
             Visibility = task.Visibility,
             CategoryId = task.CategoryId,
-            UserId = userId
+            UserId = userId,
+            ColumnId = task.ColumnId
         };
         _context.Tasks.Add(newTask);
         await _context.SaveChangesAsync();
@@ -124,8 +124,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Status = t.Status,
-                Visibility = t.Visibility
+                Visibility = t.Visibility,
             })
             .ToListAsync();
     }
@@ -142,8 +141,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Status = t.Status,
-                Visibility = t.Visibility
+                Visibility = t.Visibility,
             })
             .FirstOrDefaultAsync();
         return result;
@@ -162,7 +160,6 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Status = t.Status,
                 Visibility = t.Visibility
             })
             .ToListAsync();
@@ -176,46 +173,46 @@ public class TaskService : ITaskService
     public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task)
     {
         Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
+
         var existingTask = await _context.Tasks.FindAsync(taskId);
         if (existingTask == null)
-        {return false;}
-        else
         {
-            // ✅ Đảm bảo DueDate là UTC
-            var dueDate = task.DueDate;
-            if (dueDate.Kind == DateTimeKind.Unspecified)
-            {
-                dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
-            }
-            else if (dueDate.Kind == DateTimeKind.Local)
-            {
-                dueDate = dueDate.ToUniversalTime();
-            }
-
-            existingTask.Title = task.Title;
-            existingTask.Description = task.Description;
-            existingTask.DueDate = dueDate;
-            existingTask.IsCompleted = task.IsCompleted;
-            existingTask.Priority = CalculatePriority(existingTask.DueDate);
-            existingTask.Status = task.Status;
-            existingTask.Visibility = task.Visibility;
-            existingTask.CategoryId = task.CategoryId;
+            return false;
         }
-            try
+
+        // ✅ Đảm bảo DueDate là UTC
+        var dueDate = task.DueDate;
+        if (dueDate.Kind == DateTimeKind.Unspecified)
+        {
+            dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
+        }
+        else if (dueDate.Kind == DateTimeKind.Local)
+        {
+            dueDate = dueDate.ToUniversalTime();
+        }
+
+        // Map dữ liệu
+        existingTask.Title = task.Title;
+        existingTask.Description = task.Description;
+        existingTask.DueDate = dueDate;
+        existingTask.IsCompleted = task.IsCompleted;
+        existingTask.Priority = CalculatePriority(existingTask.DueDate);
+        existingTask.Visibility = task.Visibility;
+        existingTask.CategoryId = task.CategoryId;
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LỖI UPDATE TASK]: {ex.Message}");
+            if (ex.InnerException != null)
             {
-                await _context.SaveChangesAsync();
-                return true;
+                Console.WriteLine($"[CHI TIẾT]: {ex.InnerException.Message}");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[LỖI UPDATE TASK]: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"[CHI TIẾT]: {ex.InnerException.Message}");
-                }
-                return false;
-            }
-        
+            return false;
+        }
     }
 
     public Task<List<GetTaskResponse>> GetTasksByCategoryIdAsync(Guid categoryId)
@@ -239,17 +236,53 @@ public class TaskService : ITaskService
             .Where(t => t.UserId == userId)
             .Select(t => new GetTaskResponse
             {
+                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
+                ColumnId = t.ColumnId,
                 Title = t.Title,
                 Description = t.Description,
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Status = t.Status,
                 Visibility = t.Visibility
             })
             .ToListAsync();
 
         return tasks;
+    }
+
+    public async Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user)
+    {
+         var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (currentUserId == null || !Guid.TryParse(currentUserId, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
+        }
+        var existingTask = await _context.Tasks.FindAsync(taskId);
+    if (existingTask == null) return false;
+
+    existingTask.ColumnId = newColumnId;
+    
+    var targetColumn = await _context.Columns.FindAsync(newColumnId);
+    if (targetColumn != null && targetColumn.Title.ToLower() == "done")
+    {
+        existingTask.IsCompleted = true;
+    }
+    else
+    {
+        existingTask.IsCompleted = false; 
+    }
+
+    try
+    {
+        await _context.SaveChangesAsync();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[LỖI MOVE TASK]: {ex.Message}");
+        return false;
+    }
     }
 }

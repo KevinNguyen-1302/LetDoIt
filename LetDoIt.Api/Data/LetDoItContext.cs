@@ -1,4 +1,5 @@
 using LetDoIt.Api.Models;
+using LetsDoIt.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LetDoIt.Api.Data;
@@ -14,6 +15,7 @@ public class LetDoItContext(DbContextOptions<LetDoItContext> options) : DbContex
     public DbSet<Friend> Friends => Set<Friend>();
     public DbSet<FriendRequest> FriendRequests => Set<FriendRequest>();
     public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<Column> Columns => Set<Column>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,6 +27,7 @@ public class LetDoItContext(DbContextOptions<LetDoItContext> options) : DbContex
         modelBuilder.Entity<Friend>().HasKey(f => f.FriendId);
         modelBuilder.Entity<FriendRequest>().HasKey(fr => fr.RequestId);
         modelBuilder.Entity<Session>().HasKey(s => s.SessionId);
+        modelBuilder.Entity<Column>().HasKey(c => c.ColumnId);
 
         // Cấu hình composite key cho NotificationDetail
         modelBuilder.Entity<NotificationDetail>()
@@ -46,6 +49,18 @@ public class LetDoItContext(DbContextOptions<LetDoItContext> options) : DbContex
             .HasOne(nd => nd.User)
             .WithMany() // Giả sử Users không có collection của NotificationDetail
             .HasForeignKey(nd => nd.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Friend>()
+            .HasOne(f => f.User1)
+            .WithMany() // Giả sử Users không có collection của Friend
+            .HasForeignKey(f => f.User1Id)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Friend>()
+            .HasOne(f => f.User2)
+            .WithMany() // Giả sử Users không có collection của Friend
+            .HasForeignKey(f => f.User2Id)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -38,7 +38,10 @@ const Login = () => {
           console.error("Failed to decode token:", error);
         }
 
-        navigate("/");
+        // Dispatch event để App component biết token đã được lưu
+        window.dispatchEvent(new Event('authChange'));
+
+        navigate("/home");
       } else {
         handleApiError(response.status, data.message);
       }
@@ -79,6 +82,7 @@ const Login = () => {
                 Username
               </label>
               <input
+                id="username"
                 type="text"
                 name="username"
                 placeholder="Insert your username"
@@ -98,6 +102,7 @@ const Login = () => {
                 Email
               </label>
               <input
+                id="email"
                 type="email"
                 name="email"
                 placeholder="Insert your email"
@@ -169,15 +174,12 @@ const Login = () => {
               >
                 Forgot your password?
               </a>
-              <a href="/home">
               <button
                 type="submit"
                 className="ms-4 inline-flex items-center px-4 py-2 bg-[#f84525] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-800 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                
               >
                 Sign In
               </button>
-              </a>
             </div>
           </form>
         </div>

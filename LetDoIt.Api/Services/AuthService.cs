@@ -2,6 +2,7 @@ using Dapper;
 using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
+using LetsDoIt.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -76,12 +77,21 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
 
         var defaultCategories = new List<Category>
         {
-        new Category { Name = "Việc nhà", ColorCode = "#FF6B4A", IconName = "Home", UserId = user.UserId },
-        new Category { Name = "Công việc", ColorCode = "#4A90E2", IconName = "Briefcase", UserId = user.UserId },
-        new Category { Name = "Học tập", ColorCode = "#A29BFE", IconName = "Book", UserId = user.UserId },
-        new Category { Name = "Sức khỏe", ColorCode = "#E8FF46", IconName = "Heart", UserId = user.UserId }
+            new Category { Name = "Việc nhà", ColorCode = "#FF6B4A", IconName = "Home", UserId = user.UserId },
+            new Category { Name = "Công việc", ColorCode = "#4A90E2", IconName = "Briefcase", UserId = user.UserId },
+            new Category { Name = "Học tập", ColorCode = "#A29BFE", IconName = "Book", UserId = user.UserId },
+            new Category { Name = "Sức khỏe", ColorCode = "#E8FF46", IconName = "Heart", UserId = user.UserId }
         };
 
+        var defaultColumns = new List<Column>
+        {
+            new Column { Title = "Pending", Position = 1, UserId = user.UserId },
+            new Column { Title = "In Progress", Position = 2, UserId = user.UserId },
+            new Column { Title = "Checking", Position = 3, UserId = user.UserId },
+            new Column { Title = "Done", Position = 4, UserId = user.UserId }
+        };
+
+        await context.Columns.AddRangeAsync(defaultColumns);
         context.Categories.AddRange(defaultCategories);
         await context.SaveChangesAsync();
 
@@ -152,5 +162,5 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 
-    
+
 }

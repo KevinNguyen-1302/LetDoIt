@@ -101,6 +101,9 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
       await createTask(taskData);
       toast.success('Tạo nhiệm vụ thành công!');
       
+      // Dispatch event to notify Home component
+      window.dispatchEvent(new Event('taskCreated'));
+      
       // Reset form
       setFormData({
         title: '',

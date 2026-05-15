@@ -3,6 +3,7 @@ using System;
 using LetDoIt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LetDoIt.Api.Migrations
 {
     [DbContext(typeof(LetDoItContext))]
-    partial class LetDoItContextModelSnapshot : ModelSnapshot
+    [Migration("20260515011645_WhatIsTheProblemaaaaaa")]
+    partial class WhatIsTheProblemaaaaaa
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,9 +216,6 @@ namespace LetDoIt.Api.Migrations
                     b.Property<Guid?>("CategoryId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ColumnId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -229,6 +229,10 @@ namespace LetDoIt.Api.Migrations
 
                     b.Property<int>("Priority")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -244,8 +248,6 @@ namespace LetDoIt.Api.Migrations
                     b.HasKey("TaskId");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("ColumnId");
 
                     b.HasIndex("UserId");
 
@@ -342,38 +344,6 @@ namespace LetDoIt.Api.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("LetsDoIt.Models.Column", b =>
-                {
-                    b.Property<Guid>("ColumnId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("column_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("title");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("ColumnId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Columns");
                 });
 
             modelBuilder.Entity("LetDoIt.Api.Models.Category", b =>
@@ -478,10 +448,6 @@ namespace LetDoIt.Api.Migrations
                         .WithMany("Tasks")
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("LetsDoIt.Models.Column", "Column")
-                        .WithMany("Tasks")
-                        .HasForeignKey("ColumnId");
-
                     b.HasOne("LetDoIt.Api.Models.Users", "User")
                         .WithMany("Tasks")
                         .HasForeignKey("UserId")
@@ -489,8 +455,6 @@ namespace LetDoIt.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-
-                    b.Navigation("Column");
 
                     b.Navigation("User");
                 });
@@ -506,28 +470,12 @@ namespace LetDoIt.Api.Migrations
                     b.Navigation("Task");
                 });
 
-            modelBuilder.Entity("LetsDoIt.Models.Column", b =>
-                {
-                    b.HasOne("LetDoIt.Api.Models.Users", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("LetDoIt.Api.Models.Category", b =>
                 {
                     b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("LetDoIt.Api.Models.Users", b =>
-                {
-                    b.Navigation("Tasks");
-                });
-
-            modelBuilder.Entity("LetsDoIt.Models.Column", b =>
                 {
                     b.Navigation("Tasks");
                 });

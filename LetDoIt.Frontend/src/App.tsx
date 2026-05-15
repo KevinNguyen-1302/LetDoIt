@@ -1,20 +1,16 @@
-import Login from './pages/Login'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import Home from './pages/Home'
-import Register from './pages/Register'
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Topnavbar from './components/Topnavbar';
-import Sidebar from './components/Sidebar';
-import Analytic from './pages/Analytics';
-import Focus from './pages/Focus';
-import Calendar from './pages/Calendar';
+import Login from     './pages/Login'
+import Home from      './pages/Home'
+import Register from  './pages/Register'
+import Analytic from  './pages/Analytics';
+import Focus from     './pages/Focus';
+import Calendar from  './pages/Calendar';
+import Layout from './components/Layout';
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { isAuthenticated, isTokenExpiring, refreshTokenAsync, logout } from './services/authService';
 import { useEffect, useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const location = useLocation();
-  const showNavigation = location.pathname !== '/login' && location.pathname !== '/register';
   const [isAuth, setIsAuth] = useState(isAuthenticated());
   const [isLoading, setIsLoading] = useState(true);
 
@@ -38,29 +34,34 @@ function App() {
     };
 
     checkAuth();
-  }, [location]);
+
+    // Listen for auth changes (when token is saved in Login)
+    const handleAuthChange = () => {
+      setIsAuth(isAuthenticated());
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="App">
-      <main>
-        {showNavigation && <Topnavbar />}
-        {showNavigation && <Sidebar />}
-        <Routes>
-          <Route path="/" element={isAuth ? <Navigate to="/home" /> : <Navigate to="/login" />} />
-          <Route path='/home' element={isAuth ? <Home /> : <Navigate to="/login" />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/calendar' element={isAuth ? <Calendar /> : <Navigate to="/login" />} />
-          <Route path='/focus' element={isAuth ? <Focus /> : <Navigate to="/login" />} />
-          <Route path='/analytics' element={isAuth ? <Analytic /> : <Navigate to="/login" />} />
-        </Routes>
-        <ToastContainer position="top-right" autoClose={4000} />
-      </main>
-    </div>
+    <Routes>
+      <Route path="/" element={isAuth ? <Navigate to="/home" /> : <Navigate to="/login" />} />
+      <Route path='/login' element={<Login />} />
+      <Route path='/register' element={<Register />} />
+      
+      {/* Protected routes with Layout */}
+      <Route element={isAuth ? <Layout /> : <Navigate to="/login" />}>
+        <Route path='/home' element={<Home />} />
+        <Route path='/calendar' element={<Calendar />} />
+        <Route path='/focus' element={<Focus />} />
+        <Route path='/analytics' element={<Analytic />} />
+      </Route>
+    </Routes>
   )
 }
 
