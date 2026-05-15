@@ -1,12 +1,11 @@
-import  type { ReactNode } from 'react';
 import Topnavbar from './Topnavbar';
 import Sidebar from './Sidebar';
 import { ToastContainer } from 'react-toastify';
 import { Outlet } from 'react-router-dom';
 
-interface LayoutProps {
-  children: ReactNode;
-}
+// interface LayoutProps {
+//   children: ReactNode;
+// }
 
 const Layout = () => {
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Filter, Plus, SortDesc, Trash2, X } from "lucide-react";
-import { getMyTasks, type TaskResponse } from "../services/taskService";
+import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
+import { GetColumnsByUserId, type Column } from "../services/columnService";
 import { toast } from "react-toastify/unstyled";
 import { DndContext } from "@dnd-kit/core";
 import ColumnContainerDetail from "../components/ColumnContainerDetail";
@@ -9,40 +9,51 @@ import ColumnContainerDetail from "../components/ColumnContainerDetail";
 import ColumnContainer from "../components/ColumnContainer";
 
 const Home = () => {
-  const [tasks, setTasks] = useState<TaskResponse[]>([]);
+  // const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
-  const [columns, setColumns] = useState([
-    { id: "col-1", title: "Pending" },
-    { id: "col-2", title: "In Progress" },
-    { id: "col-3", title: "Checking" },
-    { id: "col-4", title: "Done" },
-  ]);
+  const [columns, setColumns] = useState<Column[]>([]);
 
   // Get grid size based on priority
 
-  // Fetch tasks on mount
+  // Fetch tasks and columns on mount
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getMyTasks();
-        const allTasks = response.data;
-        setTasks(allTasks);
-        setLoading(false);
+        // Get userId from localStorage
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+          toast("User ID not found", {
+            style: { fontFamily: '"Cherry Bomb One", cursive' },
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Fetch columns from API
+        const columnsResponse = await GetColumnsByUserId();
+        const columnsData = columnsResponse.data || columnsResponse;
+        setColumns(Array.isArray(columnsData) ? columnsData : []);
+
+        // TODO: Fetch tasks when needed
+        // const response = await getMyTasks();
+        // const allTasks = response.data;
+        // setTasks(allTasks);
       } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-        toast("Failed to load tasks", {
+        console.error("Failed to fetch data:", error);
+        toast("Failed to load data", {
           style: { fontFamily: '"Cherry Bomb One", cursive' },
         });
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchTasks();
+    fetchData();
 
     // Listen for task creation events
     const handleTaskCreated = () => {
-      fetchTasks();
+      fetchData();
     };
 
     window.addEventListener("taskCreated", handleTaskCreated);
@@ -53,11 +64,14 @@ const Home = () => {
 
   function createNewColumn() {
     const newColumn: Column = {
-      id: `col-${Date.now()}`,
+      columnId: `col-${Date.now()}`,
       title: `New Column ${columns.length + 1}`,
+      position: columns.length,
+      userId: localStorage.getItem('userId') || '',
     };
     setColumns([...columns, newColumn]);
     console.log("Created new column:", newColumn);
+    // TODO: Save to API
   }
 
   return (
@@ -97,11 +111,15 @@ const Home = () => {
           </button>
           <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
             <div className="flex gap-4 shrink-0">
-              {columns.map((col) => (
-                <div key={col.id} className=" " onClick={() => setSelectedColumn(col)}>
-                  <ColumnContainer column={col} />
-                </div>
-              ))}
+              {columns && columns.length > 0 ? (
+                columns.map((col) => (
+                  <div key={col.columnId} className=" " onClick={() => setSelectedColumn(col)}>
+                    <ColumnContainer column={col} />
+                  </div>
+                ))
+              ) : (
+                <div className="text-gray-500">No columns yet. Create one to get started!</div>
+              )}
             </div>
             <div className="flex items-center gap-2 text-gray-400 hover:text-red-500 bg-white border-2 border-black rounded-lg hover:bg-gray-200 transition-colors shadow-sm font-medium w-64 justify-center shrink-0">
               <Trash2 />
@@ -111,15 +129,26 @@ const Home = () => {
       </DndContext>
 
       {/* Modal for Column Detail */}
-      
+      {selectedColumn && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold">{selectedColumn.title}</h2>
+              <button
+                onClick={() => setSelectedColumn(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4">
+              <ColumnContainerDetail column={selectedColumn} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };  
 
 export default Home;
-
-export type Id = string;
-export type Column = {
-  id: Id;
-  title: string;
-};

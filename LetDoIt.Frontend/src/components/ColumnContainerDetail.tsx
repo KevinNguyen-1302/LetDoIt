@@ -1,5 +1,4 @@
-import React from 'react'
-import type { Column } from '../pages/Home';
+import type { Column } from '../services/columnService';
 
 interface Props {
   column: Column;
@@ -12,7 +11,8 @@ const ColumnContainerDetail = ({ column }: Props) => {
             <h3 className=" text-lg text-gray-800 ">{column.title}</h3>
         </div>
         <div className="mt-4 p-4">
-          <p className="text-gray-600">Column ID: {column.id}</p>
+          <p className="text-gray-600">Column ID: {column.columnId}</p>
+          <p className="text-gray-600">Position: {column.position}</p>
           {/* Add more content here */}
         </div>
     </div>
