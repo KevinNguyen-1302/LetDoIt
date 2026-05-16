@@ -1,4 +1,4 @@
-import type { Column } from "../pages/Home";
+import type { Column } from "../services/columnService";
 
 interface Props {
   column: Column;

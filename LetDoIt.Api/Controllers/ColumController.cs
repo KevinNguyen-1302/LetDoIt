@@ -1,8 +1,10 @@
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
+using LetsDoIt.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -15,8 +17,12 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize(Roles = "User")]
         [HttpGet]
-        public async Task<IActionResult> GetColumns(Guid userId)
+        public async Task<ActionResult<List<Column>>> GetColumns()
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return BadRequest("Invalid user ID.");
+
             var columns = await _service.GetColumnsByUserIdAsync(userId);
             return Ok(columns);
         }

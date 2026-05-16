@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, Calendar, Timer, LineChart, Plus, House } from 'lucide-react';
+import { Calendar, Timer, LineChart, Plus, House } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import CreateTaskModal from './Createtask';

@@ -166,6 +166,16 @@ const Login = () => {
               </label>
             </div>
 
+            <div className="mt-4 text-center ">
+              No account yet?{" "}
+              <a
+                href="/register"
+                className="text-md text-[#f84525] hover:text-red-800 font-medium transition-colors underline"
+              >
+                Register here
+              </a>
+            </div>
+
             {/* Actions */}
             <div className="flex items-center justify-end mt-4">
               <a
