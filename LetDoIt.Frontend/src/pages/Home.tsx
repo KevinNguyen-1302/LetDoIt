@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
 import { GetColumnsByUserId, type Column } from "../services/columnService";
+import { getMyTasks, type TaskResponse } from "../services/taskService";
+import { getColumns, createColumn } from "../services/columnService";
+import { getCurrentUserId } from "../services/authService";
 import { toast } from "react-toastify/unstyled";
 import { DndContext } from "@dnd-kit/core";
 import ColumnContainerDetail from "../components/ColumnContainerDetail";
 
 // import TaskCard from "../components/Taskcard";
 import ColumnContainer from "../components/ColumnContainer";
+import { Col } from "antd";
 
 const Home = () => {
   // const [tasks, setTasks] = useState<TaskResponse[]>([]);
@@ -28,6 +32,18 @@ const Home = () => {
           });
           setLoading(false);
           return;
+        const tasksResponse = await getMyTasks();
+        setTasks(tasksResponse.data);
+
+        const userId = getCurrentUserId();
+        if (userId) {
+          const columnsResponse = await getColumns(userId);
+          const fetchedColumns: Column[] = columnsResponse.data.map((col) => ({
+            id: col.columnId,
+            title: col.title,
+          }));
+          fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
+          setColumns(fetchedColumns);
         }
 
         // Fetch columns from API
@@ -72,6 +88,27 @@ const Home = () => {
     setColumns([...columns, newColumn]);
     console.log("Created new column:", newColumn);
     // TODO: Save to API
+=======
+  async function createNewColumn() {
+    try {
+      const columnTitle = `New Column ${columns.length + 1}`;
+      const response = await createColumn(columnTitle);
+      const newColumn: Column = {
+        id: response.data.columnId,
+        title: response.data.title,
+        position: columns.length + 1, // Add to the end of the list
+      };
+      setColumns([...columns, newColumn]);
+      toast("Column created successfully", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    } catch (error) {
+      console.error("Failed to create column:", error);
+      toast("Failed to create column", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    }
+>>>>>>> Stashed changes
   }
 
   return (
@@ -108,6 +145,7 @@ const Home = () => {
           >
             <Plus className=" size-6" />
             Add Collumn
+            Add Column
           </button>
           <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
             <div className="flex gap-4 shrink-0">
