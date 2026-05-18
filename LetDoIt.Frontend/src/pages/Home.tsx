@@ -1,30 +1,22 @@
 import { useEffect, useState } from "react";
 import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
-import { GetColumnsByUserId, type Column } from "../services/columnService";
-import { getMyTasks, type TaskResponse } from "../services/taskService";
-import { getColumns, createColumn } from "../services/columnService";
-import { getCurrentUserId } from "../services/authService";
+import { getColumns, createColumn, deleteColumn,  type Column } from "../services/columnService";
 import { toast } from "react-toastify/unstyled";
 import { DndContext } from "@dnd-kit/core";
 import ColumnContainerDetail from "../components/ColumnContainerDetail";
 
 // import TaskCard from "../components/Taskcard";
 import ColumnContainer from "../components/ColumnContainer";
-import { Col } from "antd";
 
 const Home = () => {
-  // const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
 
-  // Get grid size based on priority
-
-  // Fetch tasks and columns on mount
+  // Fetch columns on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get userId from localStorage
         const userId = localStorage.getItem('userId');
         if (!userId) {
           toast("User ID not found", {
@@ -32,29 +24,12 @@ const Home = () => {
           });
           setLoading(false);
           return;
-        const tasksResponse = await getMyTasks();
-        setTasks(tasksResponse.data);
-
-        const userId = getCurrentUserId();
-        if (userId) {
-          const columnsResponse = await getColumns(userId);
-          const fetchedColumns: Column[] = columnsResponse.data.map((col) => ({
-            id: col.columnId,
-            title: col.title,
-          }));
-          fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
-          setColumns(fetchedColumns);
         }
 
-        // Fetch columns from API
-        const columnsResponse = await GetColumnsByUserId();
-        const columnsData = columnsResponse.data || columnsResponse;
-        setColumns(Array.isArray(columnsData) ? columnsData : []);
-
-        // TODO: Fetch tasks when needed
-        // const response = await getMyTasks();
-        // const allTasks = response.data;
-        // setTasks(allTasks);
+        const columnsResponse = await getColumns(userId);
+        const fetchedColumns: Column[] = columnsResponse.data;
+        fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
+        setColumns(fetchedColumns);
       } catch (error) {
         console.error("Failed to fetch data:", error);
         toast("Failed to load data", {
@@ -78,27 +53,22 @@ const Home = () => {
 
   if (loading) return <div className="p-6">Loading tasks...</div>;
 
-  function createNewColumn() {
-    const newColumn: Column = {
-      columnId: `col-${Date.now()}`,
-      title: `New Column ${columns.length + 1}`,
-      position: columns.length,
-      userId: localStorage.getItem('userId') || '',
-    };
-    setColumns([...columns, newColumn]);
-    console.log("Created new column:", newColumn);
-    // TODO: Save to API
-=======
   async function createNewColumn() {
     try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        toast("User ID not found", {
+          style: { fontFamily: '"Cherry Bomb One", cursive' },
+        });
+        return;
+      }
+
       const columnTitle = `New Column ${columns.length + 1}`;
       const response = await createColumn(columnTitle);
-      const newColumn: Column = {
-        id: response.data.columnId,
-        title: response.data.title,
-        position: columns.length + 1, // Add to the end of the list
-      };
+      
+      const newColumn: Column = response.data;
       setColumns([...columns, newColumn]);
+      
       toast("Column created successfully", {
         style: { fontFamily: '"Cherry Bomb One", cursive' },
       });
@@ -108,7 +78,6 @@ const Home = () => {
         style: { fontFamily: '"Cherry Bomb One", cursive' },
       });
     }
->>>>>>> Stashed changes
   }
 
   return (
@@ -144,7 +113,6 @@ const Home = () => {
             className="mb-6 px-4 py-2 w-52 bg-[#548e76] flex text-white rounded-lg font-medium shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
           >
             <Plus className=" size-6" />
-            Add Collumn
             Add Column
           </button>
           <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
