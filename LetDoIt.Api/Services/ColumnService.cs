@@ -43,10 +43,18 @@ public class ColumnService : IColumnService
     public async Task<Column?> CreateColumnAsync(CreateColumnRequest request, ClaimsPrincipal user)
     {
         var userId = GetUserId(user);
+
+        var maxPosition = await context.Columns
+                .Where(c => c.UserId == userId)
+                .Select(c => (int?)c.Position) // Ép kiểu nullable để tránh lỗi nếu chưa có dòng nào
+                .MaxAsync() ?? 0;
+
+        var newPosition = maxPosition + 1;
+
         var newColumn = new Column
         {
             Title = request.Title,
-            Position = request.Position,
+            Position = newPosition,
             UserId = userId
         };
         context.Columns.Add(newColumn);
