@@ -74,5 +74,23 @@ export const logout = () => {
 };
 
 export const getCurrentUserId = () => {
-  return localStorage.getItem('userId');
+  const storedId = localStorage.getItem('userId');
+  if (storedId && storedId !== "undefined") {
+    return storedId;
+  }
+  
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const decoded: any = jwtDecode(token);
+      const userId = decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || decoded.nameid || decoded.sub;
+      if (userId) {
+        localStorage.setItem('userId', userId);
+        return userId;
+      }
+    } catch (error) {
+      console.error("Failed to decode token:", error);
+    }
+  }
+  return null;
 };

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
-import { Filter, Plus, SortDesc, Trash2, X } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
 import { getMyTasks, type TaskResponse } from "../services/taskService";
+import { getColumns } from "../services/columnService";
+import { getCurrentUserId } from "../services/authService";
 import { toast } from "react-toastify/unstyled";
 import { DndContext } from "@dnd-kit/core";
 import ColumnContainerDetail from "../components/ColumnContainerDetail";
@@ -12,37 +14,60 @@ const Home = () => {
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
-  const [columns, setColumns] = useState([
-    { id: "col-1", title: "Pending" },
-    { id: "col-2", title: "In Progress" },
-    { id: "col-3", title: "Checking" },
-    { id: "col-4", title: "Done" },
-  ]);
+  const [columns, setColumns] = useState<Column[]>([]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Enable horizontal scrolling with mouse wheel
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      const onWheel = (e: WheelEvent) => {
+        if (e.deltaY !== 0) {
+          e.preventDefault();
+          el.scrollLeft += e.deltaY;
+        }
+      };
+      el.addEventListener("wheel", onWheel, { passive: false });
+      return () => el.removeEventListener("wheel", onWheel);
+    }
+  }, []);
 
   // Get grid size based on priority
 
-  // Fetch tasks on mount
+  // Fetch tasks and columns on mount
   useEffect(() => {
-    const fetchTasks = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getMyTasks();
-        const allTasks = response.data;
-        setTasks(allTasks);
+        const tasksResponse = await getMyTasks();
+        setTasks(tasksResponse.data);
+
+        const userId = getCurrentUserId();
+        if (userId) {
+          const columnsResponse = await getColumns(userId);
+          const fetchedColumns: Column[] = columnsResponse.data.map((col) => ({
+            id: col.columnId,
+            title: col.title,
+            position: col.position,
+          }));
+          fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
+          setColumns(fetchedColumns);
+        }
+
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch tasks:", error);
-        toast("Failed to load tasks", {
+        console.error("Failed to fetch data:", error);
+        toast("Failed to load data", {
           style: { fontFamily: '"Cherry Bomb One", cursive' },
         });
         setLoading(false);
       }
     };
 
-    fetchTasks();
+    fetchData();
 
     // Listen for task creation events
     const handleTaskCreated = () => {
-      fetchTasks();
+      fetchData();
     };
 
     window.addEventListener("taskCreated", handleTaskCreated);
@@ -61,7 +86,7 @@ const Home = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
+    <div className="max-w-8xl h-full flex flex-col p-6">
       {/* Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
@@ -95,10 +120,17 @@ const Home = () => {
             <Plus className=" size-6" />
             Add Collumn
           </button>
-          <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
+          <div
+            ref={scrollContainerRef}
+            className="flex gap-4 mb-6 items-stretch overflow-x-auto pb-4"
+          >
             <div className="flex gap-4 shrink-0">
               {columns.map((col) => (
-                <div key={col.id} className=" " onClick={() => setSelectedColumn(col)}>
+                <div
+                  key={col.id}
+                  className=" "
+                  onClick={() => setSelectedColumn(col)}
+                >
                   <ColumnContainer column={col} />
                 </div>
               ))}
@@ -111,10 +143,9 @@ const Home = () => {
       </DndContext>
 
       {/* Modal for Column Detail */}
-      
     </div>
   );
-};  
+};
 
 export default Home;
 
@@ -122,4 +153,5 @@ export type Id = string;
 export type Column = {
   id: Id;
   title: string;
+  position?: number;
 };
