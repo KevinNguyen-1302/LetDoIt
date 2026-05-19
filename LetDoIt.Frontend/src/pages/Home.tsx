@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
-import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
+import { Filter, Plus, SortDesc } from "lucide-react";
 import {
   getColumns,
   createColumn,
   deleteColumn,
   changeColumnPosition,
   type Column,
+  updateColumn,
 } from "../services/columnService";
-import { toast } from "react-toastify/unstyled";
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { toast } from "react-toastify";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 
-// import TaskCard from "../components/Taskcard";
 import ColumnContainer from "../components/ColumnContainer";
+import TrashBin from "../components/TrashBin";
 import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
 
@@ -26,13 +33,12 @@ const Home = () => {
       activationConstraint: {
         distance: 5,
       },
-    })
+    }),
   );
   // Fetch columns on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         const columnsResponse = await getColumns();
         const fetchedColumns: Column[] = columnsResponse.data;
         fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
@@ -70,14 +76,13 @@ const Home = () => {
 
   if (loading) return <div className="p-6">Loading tasks...</div>;
 
-  async function createNewColumn() {
+  const createNewColumn = async () => {
     try {
       const columnTitle = `New Column ${columns.length + 1}`;
       const response = await createColumn(columnTitle, columns.length);
 
       const newColumn: Column = response.data;
       setColumns([...columns, newColumn]);
-
       toast("Column created successfully", {
         style: { fontFamily: '"Cherry Bomb One", cursive' },
       });
@@ -87,7 +92,7 @@ const Home = () => {
         style: { fontFamily: '"Cherry Bomb One", cursive' },
       });
     }
-  }
+  };
 
   const deleteExistingColumn = async (columnId: string) => {
     try {
@@ -104,6 +109,25 @@ const Home = () => {
     }
   };
 
+  const updateColumnTitle = async (columnId: string, newTitle: string) => {
+    try {
+      await updateColumn(columnId, newTitle);
+      setColumns(
+        columns.map((col) =>
+          col.columnId === columnId ? { ...col, title: newTitle } : col,
+        ),
+      );
+      toast("Column title updated successfully", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    } catch (error) {
+      console.error("Failed to update column title:", error);
+      toast("Failed to update column title", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    }
+  };
+
   const onDragStart = (event: DragStartEvent) => {
     if (event.active.data.current?.type === "column") {
       setActiveColumn(event.active.id as string);
@@ -113,6 +137,8 @@ const Home = () => {
 
   const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveColumn(null);
+
     if (!over) {
       return;
     }
@@ -120,17 +146,20 @@ const Home = () => {
     const activeColumnId = active.id as string;
     const overColumnId = over.id as string;
 
+    // Check if column is dropped on trash bin
+    if (overColumnId === "trash-bin") {
+      await deleteExistingColumn(activeColumnId);
+      return;
+    }
+
     if (activeColumnId === overColumnId) {
-      setActiveColumn(null);
       return;
     }
 
     const activeIndex = columns.findIndex(
       (col) => col.columnId === activeColumnId,
     );
-    const overIndex = columns.findIndex(
-      (col) => col.columnId === overColumnId,
-    );
+    const overIndex = columns.findIndex((col) => col.columnId === overColumnId);
 
     if (activeIndex === -1 || overIndex === -1) {
       setActiveColumn(null);
@@ -161,7 +190,6 @@ const Home = () => {
     }
   };
 
-  
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
       {/* Header */}
@@ -186,7 +214,11 @@ const Home = () => {
         </div>
       </div>
       {/* Kanban Columns */}
-      <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors}>
+      <DndContext
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        sensors={sensors}
+      >
         <div>
           <button
             onClick={() => {
@@ -207,7 +239,10 @@ const Home = () => {
                       className=" "
                       onClick={() => setSelectedColumn(col)}
                     >
-                      <ColumnContainer column={col} />
+                      <ColumnContainer
+                        column={col}
+                        updateColumnTitle={updateColumnTitle}
+                      />
                     </div>
                   ))
                 ) : (
@@ -217,9 +252,7 @@ const Home = () => {
                 )}
               </div>
             </SortableContext>
-            <div className="flex items-center gap-2 text-gray-400 hover:text-red-500 bg-white border-2 border-black rounded-lg hover:bg-gray-200 transition-colors shadow-sm font-medium w-64 justify-center shrink-0">
-              <Trash2 />
-            </div>
+            <TrashBin isActive={activeColumn !== null} />
           </div>
         </div>
         {createPortal(
@@ -228,6 +261,7 @@ const Home = () => {
               <ColumnContainer
                 column={columns.find((col) => col.columnId === activeColumn)!}
                 //deleteColumn = {deleteExistingColumn}
+                updateColumnTitle={updateColumnTitle}
               />
             )}
           </DragOverlay>,

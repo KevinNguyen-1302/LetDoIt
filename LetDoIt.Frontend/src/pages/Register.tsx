@@ -1,7 +1,7 @@
 import { useEffect, useState, type SyntheticEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleApiError } from "../utils/toastHelper";
-import { toast } from "react-toastify/unstyled";
+import { toast } from "react-toastify";
 
 const Register = () => {
 

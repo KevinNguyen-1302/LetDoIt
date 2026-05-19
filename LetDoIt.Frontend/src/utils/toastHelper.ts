@@ -8,6 +8,12 @@ export const handleApiError = (status: number, message?: string) => {
         style: { backgroundColor: "#25F8AE" }, 
       });
       break;
+    case 204:
+      toast.success("Thao tác thành công rồi nhe!", {
+        theme: "colored", 
+        style: { backgroundColor: "#25F8AE" }, 
+      });
+      break;
     case 400:
       toast.error("Dữ liệu không hợp lệ, check lại nhe bro!", {
         theme: "colored", 
