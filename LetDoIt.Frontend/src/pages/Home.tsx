@@ -8,6 +8,16 @@ import {
   type Column,
   updateColumn,
 } from "../services/columnService";
+
+import  { 
+  type TaskResponse,
+  updateTask,
+  getMyCategories,
+  getMyTasks,
+  getTasksByUserId, 
+  deleteTask,
+} from "../services/taskService";
+
 import { toast } from "react-toastify";
 import {
   DndContext,
@@ -28,6 +38,7 @@ const Home = () => {
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -35,19 +46,25 @@ const Home = () => {
       },
     }),
   );
-  // Fetch columns on mount
+
+
+  // Fetch columns and tasks on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch columns
         const columnsResponse = await getColumns();
         const fetchedColumns: Column[] = columnsResponse.data;
         fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
         setColumns(fetchedColumns);
+
+        // Fetch tasks
+        const tasksResponse = await getMyTasks();
+        const fetchedTasks: TaskResponse[] = tasksResponse.data;
+        setTasks(fetchedTasks);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        toast("Failed to load data", {
-          style: { fontFamily: '"Cherry Bomb One", cursive' },
-        });
+        toast("Failed to load data");
       } finally {
         setLoading(false);
       }
@@ -76,6 +93,11 @@ const Home = () => {
 
   if (loading) return <div className="p-6">Loading tasks...</div>;
 
+  // Helper function to get tasks for a specific column
+  const getTasksForColumn = (columnId: string): TaskResponse[] => {
+    return tasks.filter((task) => task.columnId === columnId);
+  };
+
   const createNewColumn = async () => {
     try {
       const columnTitle = `New Column ${columns.length + 1}`;
@@ -83,14 +105,10 @@ const Home = () => {
 
       const newColumn: Column = response.data;
       setColumns([...columns, newColumn]);
-      toast("Column created successfully", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Column created successfully");
     } catch (error) {
       console.error("Failed to create column:", error);
-      toast("Failed to create column", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Failed to create column");
     }
   };
 
@@ -98,14 +116,10 @@ const Home = () => {
     try {
       await deleteColumn(columnId);
       setColumns(columns.filter((col) => col.columnId !== columnId));
-      toast("Column deleted successfully", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Column deleted successfully");
     } catch (error) {
       console.error("Failed to delete column:", error);
-      toast("Failed to delete column", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Failed to delete column");
     }
   };
 
@@ -117,14 +131,10 @@ const Home = () => {
           col.columnId === columnId ? { ...col, title: newTitle } : col,
         ),
       );
-      toast("Column title updated successfully", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Column title updated successfully");
     } catch (error) {
       console.error("Failed to update column title:", error);
-      toast("Failed to update column title", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Failed to update column title");
     }
   };
 
@@ -177,18 +187,16 @@ const Home = () => {
 
     try {
       await changeColumnPosition(activeColumnId, newPosition);
-      toast("Column position updated", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Column position updated");
     } catch (error) {
       console.error("Failed to update column position:", error);
-      toast("Failed to update column position", {
-        style: { fontFamily: '"Cherry Bomb One", cursive' },
-      });
+      toast("Failed to update column position");
       // Revert state if API fails
       setColumns(columns);
     }
   };
+
+  
 
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
@@ -229,7 +237,7 @@ const Home = () => {
             <Plus className=" size-6" />
             Add Column
           </button>
-          <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
+          <div className="flex gap-4 mb-6 items-stretch overflow-x-auto px-4 py-10">
             <SortableContext items={columns.map((col) => col.columnId)}>
               <div className="flex gap-4 shrink-0">
                 {columns && columns.length > 0 ? (
@@ -242,6 +250,7 @@ const Home = () => {
                       <ColumnContainer
                         column={col}
                         updateColumnTitle={updateColumnTitle}
+                        tasks={getTasksForColumn(col.columnId)}
                       />
                     </div>
                   ))
@@ -260,8 +269,8 @@ const Home = () => {
             {activeColumn && (
               <ColumnContainer
                 column={columns.find((col) => col.columnId === activeColumn)!}
-                //deleteColumn = {deleteExistingColumn}
                 updateColumnTitle={updateColumnTitle}
+                tasks={getTasksForColumn(activeColumn)}
               />
             )}
           </DragOverlay>,

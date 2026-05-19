@@ -76,6 +76,11 @@ public class TaskService : ITaskService
             dueDate = dueDate.ToUniversalTime();
         }
 
+        var columnId = _context.Columns
+            .Where(c => c.UserId == userId && c.Title.ToLower() == "pending")
+            .Select(c => c.ColumnId)
+            .FirstOrDefault();
+
         // Assign user ID to the task
         var newTask = new Models.Task
         {
@@ -87,7 +92,7 @@ public class TaskService : ITaskService
             Visibility = task.Visibility,
             CategoryId = task.CategoryId,
             UserId = userId,
-            ColumnId = task.ColumnId
+            ColumnId = columnId
         };
         _context.Tasks.Add(newTask);
         await _context.SaveChangesAsync();

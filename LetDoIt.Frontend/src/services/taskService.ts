@@ -19,6 +19,7 @@ export interface TaskResponse {
   userId: string;
   createdAt: string;
   isCompleted: boolean;
+  columnId?: string; // Add columnId
 }
 
 export interface CategoryResponse {
@@ -43,3 +44,11 @@ export const getMyTasks = async () => {
 export const getTasksByUserId = async (userId: string) => {
   return await api.get<TaskResponse[]>(`/task/GetTasksByUserId?userId=${userId}`);
 };
+
+export const updateTask = async (taskId: string, taskData: Partial<CreateTaskRequest>) => {
+  return await api.put(`/task/UpdateTask/${taskId}`, taskData);
+}
+
+export const deleteTask = async (taskId: string) => {
+  return await api.delete(`/task/DeleteTask/${taskId}`);
+}
