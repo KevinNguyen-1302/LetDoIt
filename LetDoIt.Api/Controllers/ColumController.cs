@@ -55,10 +55,10 @@ namespace LetDoIt.Api.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpPut("{id}/position")]
-        public async Task<IActionResult> ChangeColumnPosition(Guid id, [FromQuery] int newPosition)
+        [HttpPut]
+        public async Task<IActionResult> ChangeColumnPosition([FromQuery] Guid columnId, [FromQuery] int newPosition)
         {
-            var changed = await _service.ChangeColumnPositionAsync(id, newPosition, User);
+            var changed = await _service.ChangeColumnPositionAsync(columnId, newPosition, User);
             if (!changed) return NotFound("Could not find column with specified ID for the user.");
             return NoContent();
         }

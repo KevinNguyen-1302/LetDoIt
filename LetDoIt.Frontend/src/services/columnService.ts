@@ -15,8 +15,8 @@ export interface ColumnResponse {
   userId: string;
 }
 
-export const getColumns = async (userId: string) => {
-  return await api.get<ColumnResponse[]>(`/Column/GetColumns?userId=${userId}`);
+export const getColumns = async () => {
+  return await api.get<ColumnResponse[]>(`/Column/GetColumns`);
 };
 
 
@@ -28,8 +28,8 @@ export const updateColumn = async (columnId: string, title: string) => {
   return await api.put<boolean>(`/Column/UpdateColumn/${columnId}`, { title });
 };
 
-export const createColumn = async (title: string) => {
-  return await api.post<ColumnResponse>(`/Column/CreateColumn`, { title });
+export const createColumn = async (title: string, position: number = 0) => {
+  return await api.post<ColumnResponse>(`/Column/CreateColumn`, { title, position });
 };
 
 export const changeColumnPosition = async (columnId: string, newPosition: number) => {

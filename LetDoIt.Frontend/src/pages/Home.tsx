@@ -1,32 +1,39 @@
 import { useEffect, useState } from "react";
 import { Filter, Plus, SortDesc, Trash2 } from "lucide-react";
-import { getColumns, createColumn, deleteColumn,  type Column } from "../services/columnService";
+import {
+  getColumns,
+  createColumn,
+  deleteColumn,
+  changeColumnPosition,
+  type Column,
+} from "../services/columnService";
 import { toast } from "react-toastify/unstyled";
-import { DndContext } from "@dnd-kit/core";
-import ColumnContainerDetail from "../components/ColumnContainerDetail";
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 
 // import TaskCard from "../components/Taskcard";
 import ColumnContainer from "../components/ColumnContainer";
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { createPortal } from "react-dom";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
-
+  const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  );
   // Fetch columns on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-          toast("User ID not found", {
-            style: { fontFamily: '"Cherry Bomb One", cursive' },
-          });
-          setLoading(false);
-          return;
-        }
 
-        const columnsResponse = await getColumns(userId);
+        const columnsResponse = await getColumns();
         const fetchedColumns: Column[] = columnsResponse.data;
         fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
         setColumns(fetchedColumns);
@@ -47,28 +54,30 @@ const Home = () => {
       fetchData();
     };
 
+    // Listen for auth change events (from login)
+    const handleAuthChange = () => {
+      setLoading(true);
+      fetchData();
+    };
+
     window.addEventListener("taskCreated", handleTaskCreated);
-    return () => window.removeEventListener("taskCreated", handleTaskCreated);
+    window.addEventListener("authChange", handleAuthChange);
+    return () => {
+      window.removeEventListener("taskCreated", handleTaskCreated);
+      window.removeEventListener("authChange", handleAuthChange);
+    };
   }, []);
 
   if (loading) return <div className="p-6">Loading tasks...</div>;
 
   async function createNewColumn() {
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        toast("User ID not found", {
-          style: { fontFamily: '"Cherry Bomb One", cursive' },
-        });
-        return;
-      }
-
       const columnTitle = `New Column ${columns.length + 1}`;
-      const response = await createColumn(columnTitle);
-      
+      const response = await createColumn(columnTitle, columns.length);
+
       const newColumn: Column = response.data;
       setColumns([...columns, newColumn]);
-      
+
       toast("Column created successfully", {
         style: { fontFamily: '"Cherry Bomb One", cursive' },
       });
@@ -80,6 +89,79 @@ const Home = () => {
     }
   }
 
+  const deleteExistingColumn = async (columnId: string) => {
+    try {
+      await deleteColumn(columnId);
+      setColumns(columns.filter((col) => col.columnId !== columnId));
+      toast("Column deleted successfully", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    } catch (error) {
+      console.error("Failed to delete column:", error);
+      toast("Failed to delete column", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    }
+  };
+
+  const onDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current?.type === "column") {
+      setActiveColumn(event.active.id as string);
+      return;
+    }
+  };
+
+  const onDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) {
+      return;
+    }
+
+    const activeColumnId = active.id as string;
+    const overColumnId = over.id as string;
+
+    if (activeColumnId === overColumnId) {
+      setActiveColumn(null);
+      return;
+    }
+
+    const activeIndex = columns.findIndex(
+      (col) => col.columnId === activeColumnId,
+    );
+    const overIndex = columns.findIndex(
+      (col) => col.columnId === overColumnId,
+    );
+
+    if (activeIndex === -1 || overIndex === -1) {
+      setActiveColumn(null);
+      return;
+    }
+
+    const newColumns = arrayMove([...columns], activeIndex, overIndex);
+    setColumns(newColumns);
+    setActiveColumn(null);
+
+    // Find new position of the active column after reordering
+    const newPosition = newColumns.findIndex(
+      (col) => col.columnId === activeColumnId,
+    );
+
+    try {
+      await changeColumnPosition(activeColumnId, newPosition);
+      toast("Column position updated", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+    } catch (error) {
+      console.error("Failed to update column position:", error);
+      toast("Failed to update column position", {
+        style: { fontFamily: '"Cherry Bomb One", cursive' },
+      });
+      // Revert state if API fails
+      setColumns(columns);
+    }
+  };
+
+  
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
       {/* Header */}
@@ -104,7 +186,7 @@ const Home = () => {
         </div>
       </div>
       {/* Kanban Columns */}
-      <DndContext>
+      <DndContext onDragStart={onDragStart} onDragEnd={onDragEnd} sensors={sensors}>
         <div>
           <button
             onClick={() => {
@@ -116,45 +198,44 @@ const Home = () => {
             Add Column
           </button>
           <div className="flex gap-4 mb-6 items-stretch overflow-x-auto">
-            <div className="flex gap-4 shrink-0">
-              {columns && columns.length > 0 ? (
-                columns.map((col) => (
-                  <div key={col.columnId} className=" " onClick={() => setSelectedColumn(col)}>
-                    <ColumnContainer column={col} />
+            <SortableContext items={columns.map((col) => col.columnId)}>
+              <div className="flex gap-4 shrink-0">
+                {columns && columns.length > 0 ? (
+                  columns.map((col) => (
+                    <div
+                      key={col.columnId}
+                      className=" "
+                      onClick={() => setSelectedColumn(col)}
+                    >
+                      <ColumnContainer column={col} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-500">
+                    No columns yet. Create one to get started!
                   </div>
-                ))
-              ) : (
-                <div className="text-gray-500">No columns yet. Create one to get started!</div>
-              )}
-            </div>
+                )}
+              </div>
+            </SortableContext>
             <div className="flex items-center gap-2 text-gray-400 hover:text-red-500 bg-white border-2 border-black rounded-lg hover:bg-gray-200 transition-colors shadow-sm font-medium w-64 justify-center shrink-0">
               <Trash2 />
             </div>
           </div>
         </div>
+        {createPortal(
+          <DragOverlay>
+            {activeColumn && (
+              <ColumnContainer
+                column={columns.find((col) => col.columnId === activeColumn)!}
+                //deleteColumn = {deleteExistingColumn}
+              />
+            )}
+          </DragOverlay>,
+          document.body,
+        )}
       </DndContext>
-
-      {/* Modal for Column Detail */}
-      {selectedColumn && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full mx-4">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-semibold">{selectedColumn.title}</h2>
-              <button
-                onClick={() => setSelectedColumn(null)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="p-4">
-              <ColumnContainerDetail column={selectedColumn} />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-};  
+};
 
 export default Home;

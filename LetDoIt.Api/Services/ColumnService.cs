@@ -27,9 +27,27 @@ public class ColumnService : IColumnService
         {
             return false;
         }
-        column.Position = newPosition;
+
         try
         {
+            // Get all columns of this user
+            var allColumns = await context.Columns
+                .Where(c => c.UserId == userId)
+                .OrderBy(c => c.Position)
+                .ToListAsync();
+
+            // Remove the column from its current position
+            allColumns.Remove(column);
+
+            // Insert it at the new position
+            allColumns.Insert(newPosition, column);
+
+            // Re-assign positions to all columns (0, 1, 2, ...)
+            for (int i = 0; i < allColumns.Count; i++)
+            {
+                allColumns[i].Position = i;
+            }
+
             await context.SaveChangesAsync();
             return true;
         }
