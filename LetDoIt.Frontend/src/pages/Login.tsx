@@ -38,7 +38,6 @@ const Login = () => {
           console.error("Failed to decode token:", error);
         }
 
-        // Dispatch event để App component biết token đã được lưu
         window.dispatchEvent(new Event('authChange'));
 
         navigate("/home");
