@@ -52,3 +52,7 @@ export const updateTask = async (taskId: string, taskData: Partial<CreateTaskReq
 export const deleteTask = async (taskId: string) => {
   return await api.delete(`/task/DeleteTask/${taskId}`);
 }
+
+export const moveTask = async (taskId: string, newColumnId: string) => {
+  return await api.post(`/task/MoveTask?taskId=${taskId}&newColumnId=${newColumnId}`);
+}

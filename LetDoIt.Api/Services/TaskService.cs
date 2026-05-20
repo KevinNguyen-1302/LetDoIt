@@ -170,11 +170,6 @@ public class TaskService : ITaskService
             .ToListAsync();
     }
 
-    public Task<bool> UpdateStatusAsync(Guid taskId, string status)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task)
     {
         Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
@@ -187,22 +182,25 @@ public class TaskService : ITaskService
 
         // ✅ Đảm bảo DueDate là UTC
         var dueDate = task.DueDate;
-        if (dueDate.Kind == DateTimeKind.Unspecified)
+        if (dueDate.HasValue)
         {
-            dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
-        }
-        else if (dueDate.Kind == DateTimeKind.Local)
-        {
-            dueDate = dueDate.ToUniversalTime();
+            if (dueDate.Value.Kind == DateTimeKind.Unspecified)
+            {
+                dueDate = DateTime.SpecifyKind(dueDate.Value, DateTimeKind.Utc);
+            }
+            else if (dueDate.Value.Kind == DateTimeKind.Local)
+            {
+                dueDate = dueDate.Value.ToUniversalTime();
+            }
         }
 
         // Map dữ liệu
-        existingTask.Title = task.Title;
-        existingTask.Description = task.Description;
-        existingTask.DueDate = dueDate;
-        existingTask.IsCompleted = task.IsCompleted;
+        existingTask.Title = task.Title ?? existingTask.Title;
+        existingTask.Description = task.Description ?? existingTask.Description;
+        existingTask.DueDate = dueDate ?? existingTask.DueDate;
+        existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
         existingTask.Priority = CalculatePriority(existingTask.DueDate);
-        existingTask.Visibility = task.Visibility;
+        existingTask.Visibility = task.Visibility ?? existingTask.Visibility;
         existingTask.CategoryId = task.CategoryId;
         try
         {
@@ -241,7 +239,6 @@ public class TaskService : ITaskService
             .Where(t => t.UserId == userId)
             .Select(t => new GetTaskResponse
             {
-                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
                 ColumnId = t.ColumnId,
                 Title = t.Title,
@@ -251,6 +248,7 @@ public class TaskService : ITaskService
                 Priority = (int)t.Priority,
                 Visibility = t.Visibility
             })
+            .OrderBy(t => t.DueDate) // Sắp xếp theo DueDate tăng dần
             .ToListAsync();
 
         return tasks;
@@ -258,7 +256,7 @@ public class TaskService : ITaskService
 
     public async Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user)
     {
-         var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (currentUserId == null || !Guid.TryParse(currentUserId, out var userId))
         {
@@ -270,14 +268,6 @@ public class TaskService : ITaskService
     existingTask.ColumnId = newColumnId;
     
     var targetColumn = await _context.Columns.FindAsync(newColumnId);
-    if (targetColumn != null && targetColumn.Title.ToLower() == "done")
-    {
-        existingTask.IsCompleted = true;
-    }
-    else
-    {
-        existingTask.IsCompleted = false; 
-    }
 
     try
     {
@@ -289,5 +279,20 @@ public class TaskService : ITaskService
         Console.WriteLine($"[LỖI MOVE TASK]: {ex.Message}");
         return false;
     }
+    }
+
+    public Task<List<GetTaskResponse>> GetTasksByDueDateAsync(DateTime dueDate)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> UpdateTaskCompletionStatus(Guid taskId, bool isCompleted)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<List<GetTaskResponse>> GetTasksByVisibilityAsync(string visibility)
+    {
+        throw new NotImplementedException();
     }
 }
