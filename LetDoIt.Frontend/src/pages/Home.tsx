@@ -9,11 +9,13 @@ import {
   updateColumn,
 } from "../services/columnService";
 
-import  { 
+import {
   type TaskResponse,
-  
   getMyTasks,
-  
+  getMyCategories,
+  type CategoryResponse,
+  moveTask,
+  deleteTask,
 } from "../services/taskService";
 
 import { toast } from "react-toastify";
@@ -28,7 +30,8 @@ import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 
 import ColumnContainer from "../components/ColumnContainer";
 import TrashBin from "../components/TrashBin";
-import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import TaskCard from "../components/TaskCard";
+import type { DragEndEvent, DragStartEvent, DragOverEvent } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
 
 const Home = () => {
@@ -36,7 +39,10 @@ const Home = () => {
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
+  const [activeTask, setActiveTask] = useState<TaskResponse | null>(null);
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [overId, setOverId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -55,6 +61,10 @@ const Home = () => {
         const fetchedColumns: Column[] = columnsResponse.data;
         fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
         setColumns(fetchedColumns);
+
+        // Fetch categories
+        const categoriesResponse = await getMyCategories();
+        setCategories(categoriesResponse.data);
 
         // Fetch tasks
         const tasksResponse = await getMyTasks();
@@ -137,64 +147,148 @@ const Home = () => {
   };
 
   const onDragStart = (event: DragStartEvent) => {
-    if (event.active.data.current?.type === "column") {
-      setActiveColumn(event.active.id as string);
+    const { active } = event;
+    setOverId(null);
+    if (active.data.current?.type === "column") {
+      setActiveColumn(active.id as string);
       return;
+    }
+    if (active.data.current?.type === "task") {
+      setActiveTask(active.data.current.task);
+      return;
+    }
+  };
+
+  const onDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    setOverId(over ? (over.id as string) : null);
+    if (!over) return;
+
+    const activeId = active.id;
+    const overIdLocal = over.id;
+
+    if (activeId === overIdLocal) return;
+
+    const isActiveATask = active.data.current?.type === "task";
+    const isOverATask = over.data.current?.type === "task";
+
+    if (!isActiveATask) return;
+
+    // Case 1: Dropping a Task over another Task
+    if (isActiveATask && isOverATask) {
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((t) => t.taskId === activeId);
+        const overIndex = prevTasks.findIndex((t) => t.taskId === overIdLocal);
+
+        if (activeIndex === -1 || overIndex === -1) return prevTasks;
+
+        const newTasks = [...prevTasks];
+        const activeTask = { ...newTasks[activeIndex] };
+        const overTask = newTasks[overIndex];
+
+        if (activeTask.columnId !== overTask.columnId) {
+          activeTask.columnId = overTask.columnId;
+          newTasks[activeIndex] = activeTask;
+          return arrayMove(newTasks, activeIndex, overIndex);
+        }
+
+        return arrayMove(newTasks, activeIndex, overIndex);
+      });
+    }
+
+    // Case 2: Dropping a Task over a Column container
+    const isOverAColumn = over.data.current?.type === "column";
+    if (isActiveATask && isOverAColumn) {
+      setTasks((prevTasks) => {
+        const activeIndex = prevTasks.findIndex((t) => t.taskId === activeId);
+        if (activeIndex === -1) return prevTasks;
+
+        const newTasks = [...prevTasks];
+        const activeTask = { ...newTasks[activeIndex], columnId: overIdLocal as string };
+        newTasks[activeIndex] = activeTask;
+
+        return arrayMove(newTasks, activeIndex, activeIndex);
+      });
     }
   };
 
   const onDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveColumn(null);
+    setActiveTask(null);
+    setOverId(null);
 
     if (!over) {
       return;
     }
 
-    const activeColumnId = active.id as string;
-    const overColumnId = over.id as string;
+    const activeId = active.id as string;
+    const overId = over.id as string;
 
-    // Check if column is dropped on trash bin
-    if (overColumnId === "trash-bin") {
-      await deleteExistingColumn(activeColumnId);
+    // Column Drag Drops
+    if (active.data.current?.type === "column") {
+      if (overId === "trash-bin") {
+        await deleteExistingColumn(activeId);
+        return;
+      }
+
+      if (activeId === overId) {
+        return;
+      }
+
+      const activeIndex = columns.findIndex((col) => col.columnId === activeId);
+      const overIndex = columns.findIndex((col) => col.columnId === overId);
+
+      if (activeIndex === -1 || overIndex === -1) {
+        return;
+      }
+
+      const newColumns = arrayMove([...columns], activeIndex, overIndex);
+      setColumns(newColumns);
+
+      const newPosition = newColumns.findIndex((col) => col.columnId === activeId);
+
+      try {
+        await changeColumnPosition(activeId, newPosition);
+        toast("Column position updated");
+      } catch (error) {
+        console.error("Failed to update column position:", error);
+        toast("Failed to update column position");
+      }
       return;
     }
 
-    if (activeColumnId === overColumnId) {
-      return;
-    }
+    // Task Drag Drops
+    if (active.data.current?.type === "task") {
+      const activeIndex = tasks.findIndex((t) => t.taskId === activeId);
+      if (activeIndex === -1) return;
 
-    const activeIndex = columns.findIndex(
-      (col) => col.columnId === activeColumnId,
-    );
-    const overIndex = columns.findIndex((col) => col.columnId === overColumnId);
+      if (overId === "trash-bin") {
+        try {
+          await deleteTask(activeId);
+          setTasks(tasks.filter((t) => t.taskId !== activeId));
+          toast.success("Task deleted successfully");
+        } catch (error) {
+          console.error("Failed to delete task:", error);
+          toast.error("Failed to delete task");
+        }
+        return;
+      }
 
-    if (activeIndex === -1 || overIndex === -1) {
-      setActiveColumn(null);
-      return;
-    }
-
-    const newColumns = arrayMove([...columns], activeIndex, overIndex);
-    setColumns(newColumns);
-    setActiveColumn(null);
-
-    // Find new position of the active column after reordering
-    const newPosition = newColumns.findIndex(
-      (col) => col.columnId === activeColumnId,
-    );
-
-    try {
-      await changeColumnPosition(activeColumnId, newPosition);
-      toast("Column position updated");
-    } catch (error) {
-      console.error("Failed to update column position:", error);
-      toast("Failed to update column position");
-      // Revert state if API fails
-      setColumns(columns);
+      const task = tasks[activeIndex];
+      try {
+        if (task.columnId) {
+          await moveTask(task.taskId, overId);
+          toast.success("Task moved successfully");
+        }
+      } catch (error) {
+        console.error("Failed to move task:", error);
+        toast.error("Failed to move task");
+      }
     }
   };
 
-  
+  const isTaskOverTrash = activeTask !== null && overId === "trash-bin";
 
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
@@ -222,6 +316,7 @@ const Home = () => {
       {/* Kanban Columns */}
       <DndContext
         onDragStart={onDragStart}
+        onDragOver={onDragOver}
         onDragEnd={onDragEnd}
         sensors={sensors}
       >
@@ -235,7 +330,7 @@ const Home = () => {
             <Plus className=" size-6" />
             Add Column
           </button>
-          <div className="flex gap-4 mb-6 items-stretch overflow-x-auto px-4 py-10">
+          <div className="flex gap-4 mb-6 items-stretch overflow-x-auto px-4 py-5">
             <SortableContext items={columns.map((col) => col.columnId)}>
               <div className="flex gap-4 shrink-0">
                 {columns && columns.length > 0 ? (
@@ -249,6 +344,9 @@ const Home = () => {
                         column={col}
                         updateColumnTitle={updateColumnTitle}
                         tasks={getTasksForColumn(col.columnId)}
+                        categories={categories}
+                        columns={columns}
+                        isOverTrash={isTaskOverTrash}
                       />
                     </div>
                   ))
@@ -259,7 +357,7 @@ const Home = () => {
                 )}
               </div>
             </SortableContext>
-            <TrashBin isActive={activeColumn !== null} />
+            <TrashBin isActive={activeColumn !== null || activeTask !== null} />
           </div>
         </div>
         {createPortal(
@@ -269,7 +367,12 @@ const Home = () => {
                 column={columns.find((col) => col.columnId === activeColumn)!}
                 updateColumnTitle={updateColumnTitle}
                 tasks={getTasksForColumn(activeColumn)}
+                categories={categories}
+                columns={columns}
               />
+            )}
+            {activeTask && (
+              <TaskCard task={activeTask} categories={categories} columns={columns} isOverlay />
             )}
           </DragOverlay>,
           document.body,

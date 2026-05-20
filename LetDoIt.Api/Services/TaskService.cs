@@ -123,6 +123,7 @@ public class TaskService : ITaskService
         return await _context.Tasks
             .Select(t => new GetTaskResponse
             {
+                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
                 Title = t.Title,
                 Description = t.Description,
@@ -140,6 +141,7 @@ public class TaskService : ITaskService
             .Where(t => t.TaskId == taskId)
             .Select(t => new GetTaskResponse
             {
+                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
                 Title = t.Title,
                 Description = t.Description,
@@ -159,6 +161,7 @@ public class TaskService : ITaskService
             .Where(t => t.UserId == userId)
             .Select(t => new GetTaskResponse
             {
+                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
                 Title = t.Title,
                 Description = t.Description,
@@ -170,9 +173,14 @@ public class TaskService : ITaskService
             .ToListAsync();
     }
 
-    public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task)
+    public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task, ClaimsPrincipal user)
     {
-        Console.WriteLine($"Đang update Task {taskId} với Title mới là: {task.Title}");
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
+        }
 
         var existingTask = await _context.Tasks.FindAsync(taskId);
         if (existingTask == null)
@@ -199,9 +207,9 @@ public class TaskService : ITaskService
         existingTask.Description = task.Description ?? existingTask.Description;
         existingTask.DueDate = dueDate ?? existingTask.DueDate;
         existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
-        existingTask.Priority = CalculatePriority(existingTask.DueDate);
+        existingTask.Priority = task.Priority!= null ? (Priority)task.Priority : existingTask.Priority;
         existingTask.Visibility = task.Visibility ?? existingTask.Visibility;
-        existingTask.CategoryId = task.CategoryId;
+        existingTask.CategoryId = task.CategoryId ?? existingTask.CategoryId;
         try
         {
             await _context.SaveChangesAsync();
@@ -239,6 +247,7 @@ public class TaskService : ITaskService
             .Where(t => t.UserId == userId)
             .Select(t => new GetTaskResponse
             {
+                TaskId = t.TaskId,
                 CategoryId = t.CategoryId,
                 ColumnId = t.ColumnId,
                 Title = t.Title,

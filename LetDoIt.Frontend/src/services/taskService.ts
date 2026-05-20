@@ -20,6 +20,7 @@ export interface TaskResponse {
   createdAt: string;
   isCompleted: boolean;
   columnId?: string; // Add columnId
+  visibility: number; // 1 = Private, 2 = Public
 }
 
 export interface CategoryResponse {
@@ -45,7 +46,17 @@ export const getTasksByUserId = async (userId: string) => {
   return await api.get<TaskResponse[]>(`/task/GetTasksByUserId?userId=${userId}`);
 };
 
-export const updateTask = async (taskId: string, taskData: Partial<CreateTaskRequest>) => {
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  dueDate?: string;
+  categoryId?: string | null;
+  priority?: number;
+  isCompleted?: boolean;
+  visibility?: number;
+}
+
+export const updateTask = async (taskId: string, taskData: UpdateTaskRequest) => {
   return await api.put(`/task/UpdateTask/${taskId}`, taskData);
 }
 
@@ -54,5 +65,7 @@ export const deleteTask = async (taskId: string) => {
 }
 
 export const moveTask = async (taskId: string, newColumnId: string) => {
-  return await api.post(`/task/MoveTask?taskId=${taskId}&newColumnId=${newColumnId}`);
+  return await api.put(`/task/MoveTask/${taskId}`, {
+    newColumnId: newColumnId
+  });
 }

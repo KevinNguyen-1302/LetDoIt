@@ -1,19 +1,37 @@
 import type { Column } from "../services/columnService";
-import type { TaskResponse } from "../services/taskService";
-import { useSortable } from "@dnd-kit/sortable";
+import type { TaskResponse, CategoryResponse } from "../services/taskService";
+import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useState } from "react";
-import TaskCard from "./Taskcard";
+import { useMemo, useState } from "react";
+import TaskCard from "./TaskCard";
 
 interface Props {
   column: Column;
   updateColumnTitle: (columnId: string, newTitle: string) => void;
   tasks: TaskResponse[];
+  categories: CategoryResponse[];
+  columns: Column[];
+  isOverTrash?: boolean;
 }
 
 const ColumnContainer = (props: Props) => {
-  const { column, updateColumnTitle, tasks } = props;
+  const { column, updateColumnTitle, tasks, categories, columns, isOverTrash } = props;
   const [editMode, setEditMode] = useState(false);
+  const [inputTitle, setInputTitle] = useState(column.title);
+
+  const taskIds = useMemo(() => {
+    return tasks.map((task) => task.taskId);
+  }, [tasks])
+
+  const handleSaveTitle = () => {
+    setEditMode(false);
+    const trimmedTitle = inputTitle.trim();
+    if (trimmedTitle && trimmedTitle !== column.title) {
+      updateColumnTitle(column.columnId, trimmedTitle);
+    } else {
+      setInputTitle(column.title);
+    }
+  };
 
   const {
     attributes,
@@ -31,7 +49,7 @@ const ColumnContainer = (props: Props) => {
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Translate.toString(transform),
     transition,
   };
 
@@ -40,7 +58,7 @@ const ColumnContainer = (props: Props) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="h-full bg-[#c6c6c6] rounded-lg w-64 opacity-50 "
+        className="h-full border-2 border-dashed border-black bg-[#c6c6c6] rounded-lg w-64 opacity-50 "
       ></div>
     );
   }
@@ -49,12 +67,15 @@ const ColumnContainer = (props: Props) => {
     <div
       ref={setNodeRef}
       style={style}
-      className="h-90 bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
+      className="h-100 bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
     >
       <div
         {...attributes}
         {...listeners}
-        onClick={() => setEditMode(true)}
+        onClick={() => {
+          setEditMode(true);
+          setInputTitle(column.title);
+        }}
         className="bg-amber-200 rounded-t-lg p-4 border-b-2 border-black flex items-center gap-2 shrink-0"
       >
         <div className="text-sm text-white bg-[#824900] w-fit px-2 py-1 rounded-full font-medium">
@@ -63,26 +84,39 @@ const ColumnContainer = (props: Props) => {
         <h3 className=" text-lg text-gray-800 ">{!editMode && column.title}</h3>
         {editMode && (
           <input
-            value = {column.title}
-            onChange = {(e) => {
-              updateColumnTitle(column.columnId, e.target.value);
-            }}
-            className = "w-full rounded-md h-7 px-2 border text-md outline-[#258ff8] bg-white outline-3 "
+            value={inputTitle}
+            onChange={(e) => setInputTitle(e.target.value)}
+            className="w-full rounded-md h-7 px-2 border text-md outline-[#258ff8] bg-white outline-3 "
             autoFocus
-            onBlur={() => setEditMode(false)}
+            onBlur={handleSaveTitle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSaveTitle();
+              if (e.key === "Escape") {
+                setEditMode(false);
+                setInputTitle(column.title);
+              }
+            }}
           />
         )}
       </div>
       {/* Tasks Container */}
-      <div className="px-3 pt-3 pb-2 overflow-y-auto flex-1">
-        {tasks && tasks.length > 0 ? (
-          tasks.map((task) => (
-            <TaskCard key={task.taskId} task={task} />
-          ))
-        ) : (
-          <div className="text-md text-gray-400 text-center py-4">No tasks yet</div>
-        )}
-      </div>
+      <SortableContext items={tasks.map((task) => task.taskId)}>
+        <div className="px-3 pt-3 pb-2 overflow-y-auto flex-1">
+          {tasks && tasks.length > 0 ? (
+            tasks.map((task) => (
+              <TaskCard
+                key={task.taskId}
+                task={task}
+                categories={categories}
+                columns={columns}
+                isOverTrash={isOverTrash}
+              />
+            ))
+          ) : (
+            <div className="text-md text-gray-400 text-center py-4">No tasks yet</div>
+          )}
+        </div>
+      </SortableContext>
     </div>
   );
 };

@@ -1,7 +1,8 @@
-﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -24,9 +25,14 @@ namespace LetDoIt.Api.Controllers
             return Ok(task);
         }
 
+        [Authorize(Roles = "User")]
         [HttpGet]
-        public async Task<ActionResult<Models.Task?>> GetTasksByUserId(Guid userId)
+        public async Task<ActionResult<Models.Task?>> GetTasksByUserId()
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return BadRequest("Invalid user ID.");
+                
             var tasks = await _service.GetTasksByUserId(userId);
             if (tasks is null) return NotFound("Khong the tim thay task voi UserId chi dinh");
             return Ok(tasks);
@@ -40,14 +46,16 @@ namespace LetDoIt.Api.Controllers
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.TaskId }, createdTask);
         }
 
+        [Authorize(Roles = "User")]
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTask(Guid id, UpdateTaskRequest task)
+        public async Task<ActionResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest task)
         {
-            var updated = await _service.UpdateTaskAsync(id, task);
+            var updated = await _service.UpdateTaskAsync(id, task, User);
             if (!updated) return NotFound("Khong the tim thay task voi Id chi dinh");
             return NoContent();
         }
 
+        [Authorize(Roles = "User")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteTask(Guid id)
         {
@@ -57,6 +65,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         // Accept priority in the request body as JSON. If omitted (null) service will auto-calculate.
+        [Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<ActionResult> ChangePriority(Guid id, [FromBody] ChangePriorityRequest? request)
         {
