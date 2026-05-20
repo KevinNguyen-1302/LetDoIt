@@ -1,4 +1,4 @@
-﻿using LetDoIt.Api.Models;
+using LetDoIt.Api.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace LetDoIt.Api.DTOs
@@ -6,7 +6,6 @@ namespace LetDoIt.Api.DTOs
     public class GetTaskResponse
     {
         public Guid TaskId { get; set; }
-        //public Guid UserId { get; set; }
         public Guid? CategoryId { get; set; }
         public string Title { get; set; } = null!;
         public string Description { get; set; } = string.Empty;

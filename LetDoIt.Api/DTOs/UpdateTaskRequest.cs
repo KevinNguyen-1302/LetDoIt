@@ -5,15 +5,12 @@ namespace LetDoIt.Api.DTOs
 {
     public class UpdateTaskRequest
     {
-        public Guid TaskId { get; set; }
-        public Guid UserId { get; set; }
         public Guid? CategoryId { get; set; }
-        public string Title { get; set; } = null!;
-        public string Description { get; set; } = string.Empty;
-        public DateTime DueDate { get; set; }
-        public bool IsCompleted { get; set; } = false; // Default to not completed
-        public int Priority { get; set; } = 3; // Default to Medium
-        public string Status { get; set; } = "Pending"; // Default to Pending
-        public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public DateTime? DueDate { get; set; }
+        public bool? IsCompleted { get; set; }
+        public int? Priority { get; set; }
+        public TaskVisibility? Visibility { get; set; } = TaskVisibility.Private; // Default to Private
     }
 }
