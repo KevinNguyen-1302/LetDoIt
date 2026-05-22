@@ -69,3 +69,15 @@ export const moveTask = async (taskId: string, newColumnId: string) => {
     newColumnId: newColumnId
   });
 }
+
+export const createCategory = async (category: CategoryResponse) => {
+  return await api.post('/category/CreateCategory', category);
+}
+
+export const deleteCategory = async (categoryId: string) => {
+  return await api.delete(`/category/DeleteCategory/${categoryId}`);
+}
+
+export const updateCategory = async (category: CategoryResponse) => {
+  return await api.put(`/category/UpdateCategory/${category.categoryId}`, category);
+}

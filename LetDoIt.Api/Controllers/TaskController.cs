@@ -25,6 +25,7 @@ namespace LetDoIt.Api.Controllers
             return Ok(task);
         }
 
+        
         [Authorize(Roles = "User")]
         [HttpGet]
         public async Task<ActionResult<Models.Task?>> GetTasksByUserId()
