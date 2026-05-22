@@ -40,6 +40,7 @@ const Home = () => {
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<TaskResponse | null>(null);
+  const [dragOriginalColumnId, setDragOriginalColumnId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [overId, setOverId] = useState<string | null>(null);
@@ -155,6 +156,7 @@ const Home = () => {
     }
     if (active.data.current?.type === "task") {
       setActiveTask(active.data.current.task);
+      setDragOriginalColumnId(active.data.current.task?.columnId ?? null);
       return;
     }
   };
@@ -217,6 +219,8 @@ const Home = () => {
     setActiveColumn(null);
     setActiveTask(null);
     setOverId(null);
+    const savedOriginalColumnId = dragOriginalColumnId;
+    setDragOriginalColumnId(null);
 
     if (!over) {
       return;
@@ -275,10 +279,24 @@ const Home = () => {
         return;
       }
 
-      const task = tasks[activeIndex];
+      // Resolve the actual target columnId:
+      // - If dropped over a column → overId is the columnId
+      // - If dropped over another task → overId is a taskId, get columnId from that task
+      let targetColumnId: string;
+      if (over.data.current?.type === "column") {
+        targetColumnId = overId;
+      } else if (over.data.current?.type === "task") {
+        targetColumnId = over.data.current.task?.columnId
+          ?? tasks.find((t) => t.taskId === overId)?.columnId
+          ?? overId;
+      } else {
+        targetColumnId = overId;
+      }
+
       try {
-        if (task.columnId) {
-          await moveTask(task.taskId, overId);
+        // Use savedOriginalColumnId (from before onDragOver's optimistic update)
+        if (savedOriginalColumnId && savedOriginalColumnId !== targetColumnId) {
+          await moveTask(tasks[activeIndex].taskId, targetColumnId);
           toast.success("Task moved successfully");
         }
       } catch (error) {

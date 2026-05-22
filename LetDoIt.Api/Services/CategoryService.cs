@@ -57,12 +57,12 @@ namespace LetDoIt.Api.Services
             return await connection.QueryAsync<CategoryCountDto>(sql, new { UserId = userId });
         }
 
-        public async Task<Category> UpdateCategoryAsync(Guid CategoryId, GetCategoryResponse category, ClaimsPrincipal user)
+        public async Task<Category> UpdateCategoryAsync(Guid categoryId, GetCategoryResponse category, ClaimsPrincipal user)
         {
             var userId = GetUserId(user);
             
             var existingCategory = await _context.Categories
-                .FirstOrDefaultAsync(c => c.CategoryId == CategoryId && c.UserId == userId);
+                .FirstOrDefaultAsync(c => c.CategoryId == categoryId && c.UserId == userId);
 
             if (existingCategory == null)
             {
@@ -91,6 +91,23 @@ namespace LetDoIt.Api.Services
                     TaskCount = c.Tasks.Count()
                 })
                 .ToListAsync();
+        }
+
+        public async Task<bool> DeleteCategoryAsync(Guid categoryId, ClaimsPrincipal user)
+        {
+            var userId = GetUserId(user);
+            
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.CategoryId == categoryId && c.UserId == userId);
+
+            if (category == null)
+            {
+                return false;
+            }
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         private static Guid GetUserId (ClaimsPrincipal user)

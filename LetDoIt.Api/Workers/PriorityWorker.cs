@@ -21,28 +21,20 @@ namespace LetDoIt.Api.Workers
                 {
                     var db = scope.ServiceProvider.GetRequiredService<LetDoItContext>();
 
-                    // 1. TỐI ƯU DB: Chỉ lấy Task chưa xong
                     var tasks = db.Tasks
                         .Where(t => !t.IsCompleted)
                         .ToList();
-
-                    // 2. Lấy giờ 1 lần duy nhất ở ngoài vòng lặp
                     var now = DateTime.UtcNow;
 
                     foreach (var task in tasks)
                     {
-                        // Gọi .Value vì đã check != null ở trên.
-                        // Khuyên dùng .Date để tính chênh lệch ngày cho chuẩn xác
                         var daysRemaining = (task.DueDate - now).TotalDays;
-
-                        // 3. Ép kiểu bằng (int) nhìn gọn và chuẩn C# hơn
                         if (daysRemaining <= 1) task.Priority = Priority.Urgent;
                         else if (daysRemaining <= 3) task.Priority = Priority.High;
                         else if (daysRemaining <= 7) task.Priority = Priority.Medium;
                         else task.Priority = Priority.Low;
                     }
 
-                    // 4. Thêm stoppingToken vào đây
                     await db.SaveChangesAsync(stoppingToken);
                 }
 

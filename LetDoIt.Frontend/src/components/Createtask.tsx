@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createTask, getMyCategories, type CreateTaskRequest, type CategoryResponse } from '../services/taskService';
+import { createTask, type CreateTaskRequest } from '../services/taskService';
+import CustomCategorySelect from './CustomCategorySelect';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -19,8 +20,8 @@ const PRIORITY_OPTIONS = [
 const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
+
+
 
   const [formData, setFormData] = useState({
     title: '',
@@ -41,25 +42,12 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
         onClose();
         return;
       }
-      fetchCategories();
     }
   }, [isOpen]);
 
-  const fetchCategories = async () => {
-    try {
-      setLoadingCategories(true);
-      const response = await getMyCategories();
-      setCategories(response.data);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Không thể tải danh mục');
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -71,20 +59,20 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
 
     // Validation
     if (!formData.title.trim()) {
-      toast.error('Vui lòng nhập tên nhiệm vụ');
+      toast.error('Please enter task name');
       return;
     }
 
     if (!formData.dueDate) {
-      toast.error('Vui lòng chọn ngày hoàn thành');
+      toast.error('Please enter due date');
       return;
     }
 
     // Kết hợp date và time thành DateTime
-    const dateTimeString = formData.dueTime 
+    const dateTimeString = formData.dueTime
       ? `${formData.dueDate}T${formData.dueTime}:00`
       : `${formData.dueDate}T23:59:59`;
-    
+
     // Parse thành Date object rồi convert sang UTC ISO string
     const dueDateTime = new Date(dateTimeString).toISOString();
 
@@ -94,16 +82,16 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
         title: formData.title,
         description: formData.description,
         dueDate: dueDateTime,
-        categoryId: formData.categoryId || undefined,
+        categoryId: formData.categoryId ? formData.categoryId : null,
         priority: parseInt(formData.priority)
       };
 
       await createTask(taskData);
-      toast.success('Tạo nhiệm vụ thành công!');
-      
+      toast.success('Create new task successfully!');
+
       // Dispatch event to notify Home component
       window.dispatchEvent(new Event('taskCreated'));
-      
+
       // Reset form
       setFormData({
         title: '',
@@ -117,10 +105,10 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     } catch (error: any) {
       console.error('Error creating task:', error);
       if (error.response?.status === 401) {
-        toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại');
+        toast.error('Login session has expired. Please login again');
         navigate('/login');
       } else {
-        toast.error(error.response?.data?.message || 'Không thể tạo nhiệm vụ');
+        toast.error(error.response?.data?.message || 'Cannot create task');
       }
     } finally {
       setLoading(false);
@@ -133,9 +121,9 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Modal Container */}
       <div className="w-full max-w-lg bg-[#F28C48] rounded-[30px] p-8 shadow-2xl relative border-4 border-black">
-        
+
         {/* Nút đóng nhanh */}
-        <button 
+        <button
           onClick={onClose}
           disabled={loading}
           className="absolute top-4 right-4 text-black hover:scale-110 transition-transform disabled:opacity-50"
@@ -150,12 +138,12 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          
+
           {/* Title */}
           <div>
             <label className="block text-black font-bold mb-1 ml-2">Task Name</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="title"
               value={formData.title}
               onChange={handleChange}
@@ -168,8 +156,8 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-black font-bold mb-1 ml-2">Due Date</label>
-              <input 
-                type="date" 
+              <input
+                type="date"
                 name="dueDate"
                 value={formData.dueDate}
                 onChange={handleChange}
@@ -178,8 +166,8 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
             </div>
             <div>
               <label className="block text-black font-bold mb-1 ml-2">Due Time</label>
-              <input 
-                type="time" 
+              <input
+                type="time"
                 name="dueTime"
                 value={formData.dueTime}
                 onChange={handleChange}
@@ -189,11 +177,11 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
           </div>
 
           {/* Description */}
-        
+
 
           <div>
             <label className="block text-black font-bold mb-1 ml-2">Description</label>
-            <textarea 
+            <textarea
               rows={3}
               name="description"
               value={formData.description}
@@ -203,48 +191,35 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
             />
           </div>
 
-          {/* Category Select */}
-        <div className="grid grid-cols-2 gap-4">  
-          <div>
-            <label className="block text-black font-bold mb-1 ml-2">Category</label>
-            <select 
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleChange}
-              disabled={loadingCategories}
-              className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none appearance-none bg-white disabled:opacity-50"
-            >
-              <option value="">
-                {loadingCategories ? 'Loading...' : 'Select Category'}
-              </option>
-              {categories.map(cat => (
-                <option key={cat.categoryId} value={cat.categoryId}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Priority Select */}
+            <div>
+              <label className="block text-black font-bold mb-1 ml-2">Priority</label>
+              <select
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none appearance-none bg-white"
+              >
+                {PRIORITY_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Category Select */}
+            <div>
+              <label className="block text-black font-bold mb-1 ml-2">Category</label>
+              <CustomCategorySelect
+                value={formData.categoryId}
+                onChange={(val) => setFormData(prev => ({ ...prev, categoryId: val }))}
+              />
+            </div>
           </div>
-        
-          {/* Priority Select */}
-          <div>
-            <label className="block text-black font-bold mb-1 ml-2">Priority</label>
-            <select 
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none appearance-none bg-white"
-            >
-              {PRIORITY_OPTIONS.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
           {/* Footer Buttons */}
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <button 
+          <div className="flex items-center justify-center gap-8 pt-4">
+            <button
               type="button"
               onClick={onClose}
               disabled={loading}
@@ -252,7 +227,7 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="bg-[#E8FF46] text-black px-10 py-3 rounded-full font-cherry text-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"

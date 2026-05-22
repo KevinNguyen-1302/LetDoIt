@@ -1,4 +1,4 @@
-﻿namespace LetDoIt.Api.DTOs
+namespace LetDoIt.Api.DTOs
 {
     public class GetCategoryResponse
     {

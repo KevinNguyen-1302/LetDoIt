@@ -65,7 +65,6 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
 
-        // ✅ Đảm bảo DueDate là UTC
         var dueDate = task.DueDate;
         if (dueDate.Kind == DateTimeKind.Unspecified)
         {
@@ -88,7 +87,7 @@ public class TaskService : ITaskService
             Description = task.Description,
             DueDate = dueDate,
             IsCompleted = task.IsCompleted,
-            Priority = CalculatePriority(dueDate),
+            Priority = task.Priority != 0 ? task.Priority : CalculatePriority(dueDate),
             Visibility = task.Visibility,
             CategoryId = task.CategoryId,
             UserId = userId,

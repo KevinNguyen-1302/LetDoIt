@@ -13,17 +13,17 @@ namespace LetDoIt.Api.Controllers
         private readonly ICategoryService _service;
         public CategoryController(ICategoryService service) => _service = service;
 
-        [Authorize]
+        [Authorize ]
         [HttpGet]
         public async Task<ActionResult<List<GetCategoryResponse>>> GetCategories()
             => Ok(await _service.GetAllCategoriesAsync(User));
 
-        [Authorize]
+        [Authorize ]
         [HttpGet]
         public async Task<ActionResult<List<CategoryCountDto>>> GetCategoryTaskCounts()
             => Ok(await _service.GetCategoryTaskCountsAsync(User));
 
-        [Authorize]
+        [Authorize ]
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory(GetCategoryResponse category)
         {
@@ -31,7 +31,7 @@ namespace LetDoIt.Api.Controllers
             return CreatedAtAction(nameof(GetCategories), new { id = createdCategory.CategoryId }, createdCategory);
         }
 
-        [Authorize]
+        [Authorize ]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryCountDto>>> GetStatsWithDapper()
         {
@@ -40,5 +40,15 @@ namespace LetDoIt.Api.Controllers
             var stats = await _service.GetStatsWithDapperAsync(userId);
             return Ok(stats);
         }
+
+        [Authorize ]
+        [HttpDelete]
+        public async Task<ActionResult<bool>> DeleteCategory(Guid categoryId)
+            => Ok(await _service.DeleteCategoryAsync(categoryId, User));
+
+        [Authorize ]
+        [HttpPut]
+        public async Task<ActionResult<Category>> UpdateCategory(Guid categoryId, GetCategoryResponse category)
+            => Ok(await _service.UpdateCategoryAsync(categoryId, category, User));
     }
 }

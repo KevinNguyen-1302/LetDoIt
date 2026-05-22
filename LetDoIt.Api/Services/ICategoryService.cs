@@ -7,8 +7,9 @@ namespace LetDoIt.Api.Services
     {
         Task<List<GetCategoryResponse>> GetAllCategoriesAsync(ClaimsPrincipal user);
         Task<Category> CreateCategoryAsync(GetCategoryResponse category, ClaimsPrincipal user);
-        Task<Category> UpdateCategoryAsync(Guid categoryId, GetCategoryResponse category, ClaimsPrincipal user);
         Task<List<CategoryCountDto>> GetCategoryTaskCountsAsync(ClaimsPrincipal user);
         Task<IEnumerable<CategoryCountDto>> GetStatsWithDapperAsync(Guid userId);
+        Task<bool> DeleteCategoryAsync(Guid categoryId, ClaimsPrincipal user);
+        Task<Category> UpdateCategoryAsync(Guid categoryId ,GetCategoryResponse category, ClaimsPrincipal user);
     }
 }
