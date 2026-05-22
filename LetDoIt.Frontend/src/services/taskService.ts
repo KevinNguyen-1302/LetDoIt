@@ -70,6 +70,10 @@ export const moveTask = async (taskId: string, newColumnId: string) => {
   });
 }
 
+export const getTasksByDueDate = async (dueDate: string) => {
+  return await api.get<TaskResponse[]>(`/task/GetTasksByDueDate?dueDate=${dueDate}`);
+}
+
 export const createCategory = async (category: CategoryResponse) => {
   return await api.post('/category/CreateCategory', category);
 }

@@ -1,9 +1,7 @@
-// React
-
 const Focus = () => {
-  return (
-    <div>Focus</div>
-  )
+    return (
+        <div>AAAAAAAAAAA</div>
+    )
 }
 
 export default Focus

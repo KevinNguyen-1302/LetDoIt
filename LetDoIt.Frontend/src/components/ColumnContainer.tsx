@@ -2,7 +2,7 @@ import type { Column } from "../services/columnService";
 import type { TaskResponse, CategoryResponse } from "../services/taskService";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import TaskCard from "./TaskCard";
 
 interface Props {
@@ -18,10 +18,6 @@ const ColumnContainer = (props: Props) => {
   const { column, updateColumnTitle, tasks, categories, columns, isOverTrash } = props;
   const [editMode, setEditMode] = useState(false);
   const [inputTitle, setInputTitle] = useState(column.title);
-
-  const taskIds = useMemo(() => {
-    return tasks.map((task) => task.taskId);
-  }, [tasks])
 
   const handleSaveTitle = () => {
     setEditMode(false);
