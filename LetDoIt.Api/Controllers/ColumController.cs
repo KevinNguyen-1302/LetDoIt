@@ -33,7 +33,7 @@ namespace LetDoIt.Api.Controllers
         {
             var column = await _service.CreateColumnAsync(request, User);
             if (column is null) return BadRequest("Could not create column.");
-            return CreatedAtAction(nameof(GetColumns), new { userId = column.UserId }, column);
+            return CreatedAtAction(nameof(GetColumns), new { projectId = column.ProjectId }, column);
         }
 
         [Authorize(Roles = "User")]

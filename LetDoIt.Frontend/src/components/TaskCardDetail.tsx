@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Edit2, CheckCircle, Clock, Tag, Eye, EyeOff, Save, Check, RotateCcw } from "lucide-react";
+import { X, Edit2, CheckCircle, Clock, Eye, EyeOff, Save, Check, RotateCcw } from "lucide-react";
 import * as Icons from "lucide-react";
 import { toast } from "react-toastify";
-import { updateTask, type TaskResponse, type CategoryResponse } from "../services/taskService";
+import { updateTask, type TaskResponse } from "../services/taskService";
 import type { Column } from "../services/columnService";
 
 // Helper component to dynamically render category icons from Lucide library
@@ -21,11 +21,10 @@ interface Props {
     task: TaskResponse;
     isOpen: boolean;
     onClose: () => void;
-    categories: CategoryResponse[];
     columns: Column[];
 }
 
-const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) => {
+const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -36,7 +35,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
         dueDate: "",
         dueTime: "",
         priority: String(task.priority || 2),
-        categoryId: task.categoryId || "",
         visibility: task.visibility === 2 ? "2" : "1", // 1 = Private, 2 = Public
     });
 
@@ -59,7 +57,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
                 dueDate: localDate,
                 dueTime: localTime,
                 priority: String(task.priority),
-                categoryId: task.categoryId || "",
                 visibility: String(task.visibility || 1),
             });
         }
@@ -99,7 +96,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
     };
 
     // Find Category info
-    const taskCategory = categories.find((c) => c.categoryId === (isEditing ? formData.categoryId : task.categoryId));
 
     // Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -113,7 +109,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
             const newStatus = !task.isCompleted;
             await updateTask(task.taskId, {
                 isCompleted: newStatus,
-                categoryId: task.categoryId || null
             });
             toast.success(newStatus ? "Task marked as Completed!" : "Task marked as Incomplete");
             window.dispatchEvent(new Event("taskUpdate")); // Dispatch event to refresh list
@@ -146,7 +141,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
                 description: formData.description,
                 dueDate: new Date(dateTimeString).toISOString(),
                 priority: parseInt(formData.priority),
-                categoryId: formData.categoryId || null,
                 visibility: parseInt(formData.visibility),
             };
 
@@ -173,12 +167,12 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
 
             {/* Modal Card */}
             <div
-                className={`relative w-full max-w-xl ${getBgColor(isEditing ? parseInt(formData.priority) : task.priority)} text-black rounded-[24px] p-6 md:p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform duration-300 scale-100 z-10`}
+                className={`relative w-full max-w-xl ${getBgColor(isEditing ? parseInt(formData.priority) : task.priority)} text-black rounded-3xl p-6 md:p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-transform duration-300 scale-100 z-10`}
             >
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-black hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all active:scale-95 transition-transform border-2 border-black bg-white rounded-full p-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                    className="absolute top-4 right-4 text-black hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-transform active:scale-95 border-2 border-black bg-white rounded-full p-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 >
                     <X size={20} strokeWidth={2.5} />
                 </button>
@@ -255,23 +249,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
                                     <option value="4">Urgent</option>
                                 </select>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-black mb-1">Category</label>
-                                <select
-                                    name="categoryId"
-                                    value={formData.categoryId}
-                                    onChange={handleInputChange}
-                                    className="w-full px-3 py-2 rounded-xl border-2 border-black outline-none bg-white/70 focus:bg-white"
-                                >
-                                    <option value="">No Category</option>
-                                    {categories.map((c) => (
-                                        <option key={c.categoryId} value={c.categoryId}>
-                                            {c.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
 
                         {/* Visibility Settings */}
@@ -332,22 +309,6 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
                                 {getPriorityLabel(task.priority)} Priority
                             </span>
 
-                            {/* Category badge with Icon */}
-                            {taskCategory ? (
-                                <span
-                                    style={{ backgroundColor: taskCategory.colorCode + "25", borderColor: 'black' }}
-                                    className="text-xs px-3 py-1 font-bold rounded-full border-2 text-gray-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1.5"
-                                >
-                                    <CategoryIcon iconName={taskCategory.iconName} size={14} />
-                                    {taskCategory.name}
-                                </span>
-                            ) : (
-                                <span className="text-xs px-3 py-1 font-bold rounded-full border-2 border-black bg-white/40 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1.5">
-                                    <Tag size={14} />
-                                    General
-                                </span>
-                            )}
-
                             {/* Status Badge */}
                             <span className={`text-xs px-3 py-1 font-bold rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1.5 ${task.isCompleted ? 'bg-[#548e76] text-white' : 'bg-white'}`}>
                                 {task.isCompleted ? <CheckCircle size={14} /> : <Clock size={14} />}
@@ -363,7 +324,7 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
 
                         {/* Task Title */}
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-none mb-1 break-words">
+                            <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-none mb-1 wrap-break-words">
                                 {task.title}
                             </h2>
                             {task.dueDate && (
@@ -378,7 +339,7 @@ const TaskCardDetail = ({ task, isOpen, onClose, categories, columns }: Props) =
                         </div>
 
                         {/* Description Box */}
-                        <div className="bg-white/50 border-2 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[100px] flex flex-col justify-between">
+                        <div className="bg-white/50 border-2 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-25 flex flex-col justify-between">
                             <div>
                                 <h4 className="text-xs font-black uppercase text-gray-600 tracking-wider mb-2">Description</h4>
                                 <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">

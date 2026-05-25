@@ -19,14 +19,14 @@ namespace LetsDoIt.Models
         [Column("position")]
         public int Position { get; set; }
 
-        // Khóa ngoại liên kết tới User
+        // Khóa ngoại liên kết tới Project
         [Required]
-        [Column("user_id")]
-        public Guid UserId { get; set; }
+        [Column("Project_Id")]
+        [ForeignKey("Project")]
+        public Guid ProjectId { get; set; }
 
-        // Navigation property (Nếu bro có class User)
-        [ForeignKey("UserId")]
-        public virtual Users? User { get; set; }
+        // Navigation property
+        public virtual Project? Project { get; set; }
 
         // Quan hệ 1-N: Một cột có nhiều Task
         public virtual ICollection<LetDoIt.Api.Models.Task> Tasks { get; set; } = new List<LetDoIt.Api.Models.Task>();

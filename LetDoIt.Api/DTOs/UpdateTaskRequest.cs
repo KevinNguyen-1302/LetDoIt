@@ -5,7 +5,6 @@ namespace LetDoIt.Api.DTOs
 {
     public class UpdateTaskRequest
     {
-        public Guid? CategoryId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public DateTime? DueDate { get; set; }

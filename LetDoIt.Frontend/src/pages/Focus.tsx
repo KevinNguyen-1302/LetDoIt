@@ -1,9 +1,11 @@
-// React
+import Pomodoro from "../components/Pomodoro"
 
 const Focus = () => {
-  return (
-    <div>Focus</div>
-  )
+    return (
+        <div>
+            <Pomodoro />
+        </div>
+    )
 }
 
 export default Focus

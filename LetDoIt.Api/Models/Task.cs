@@ -10,7 +10,6 @@ public class Task
     public Guid TaskId { get; set; }
     [Required]
     public Guid UserId { get; set; }
-    public Guid? CategoryId { get; set; }
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = null!;
@@ -26,9 +25,8 @@ public class Task
     public virtual Column? Column { get; set; }
     [Required]
     public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
-
+    [ForeignKey("UserId")]
     public virtual Users? User { get; set; }
-    public virtual Category? Category { get; set; }
 }
 
 public enum TaskVisibility

@@ -15,6 +15,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@tailwindcss/vite": "^4.2.4",
     "@types/react-router-dom": "^5.3.3",
+    "animejs": "^4.4.1",
     "antd": "^6.3.7",
     "axios": "^1.16.0",
     "gridstack": "^12.6.0",

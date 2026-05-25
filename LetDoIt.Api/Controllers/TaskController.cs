@@ -13,9 +13,6 @@ namespace LetDoIt.Api.Controllers
         private readonly ITaskService _service;
         public TaskController(ITaskService service) => _service = service;
 
-        [HttpGet]
-        public async Task<ActionResult<List<GetTaskResponse>>> GetTasks()
-            => Ok(await _service.GetAllTasksAsync());
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Models.Task?>> GetTaskById(Guid id)
@@ -89,6 +86,18 @@ namespace LetDoIt.Api.Controllers
             var moved = await _service.MoveTask(id, request.NewColumnId, User);
             if (!moved) return NotFound("Khong the tim thay task voi Id chi dinh hoac ColumnId khong hop le");
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<List<GetTaskResponse>>> GetTasksByDueDate(DateTime dueDate)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return BadRequest("Invalid user ID.");
+
+            var tasks = await _service.GetTasksByDueDateAsync(dueDate, User);
+            return Ok(tasks);
         }
     }
 }

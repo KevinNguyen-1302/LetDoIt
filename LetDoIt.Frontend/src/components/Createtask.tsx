@@ -1,56 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { createTask, type CreateTaskRequest } from '../services/taskService';
-import CustomCategorySelect from './CustomCategorySelect';
-
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { createTask, type CreateTaskRequest } from "../services/taskService";
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const PRIORITY_OPTIONS = [
-  { value: 1, label: 'Low' },
-  { value: 2, label: 'Medium' },
-  { value: 3, label: 'High' },
-  { value: 4, label: 'Urgent' }
+  { value: 1, label: "Low" },
+  { value: 2, label: "Medium" },
+  { value: 3, label: "High" },
+  { value: 4, label: "Urgent" },
 ];
 
 const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-
-
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    dueDate: '',
-    dueTime: '',
-    categoryId: '',
-    priority: '2'
+    title: "",
+    description: "",
+    dueDate: "",
+    dueTime: "",
+    priority: "2",
   });
 
   // Fetch categories khi modal mở
   useEffect(() => {
     if (isOpen) {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        toast.error('Vui lòng đăng nhập để tạo task');
-        navigate('/login');
+        toast.error("Vui lòng đăng nhập để tạo task");
+        navigate("/login");
         onClose();
         return;
       }
     }
   }, [isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -59,12 +58,12 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
 
     // Validation
     if (!formData.title.trim()) {
-      toast.error('Please enter task name');
+      toast.error("Please enter task name");
       return;
     }
 
     if (!formData.dueDate) {
-      toast.error('Please enter due date');
+      toast.error("Please enter due date");
       return;
     }
 
@@ -72,43 +71,48 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     const dateTimeString = formData.dueTime
       ? `${formData.dueDate}T${formData.dueTime}:00`
       : `${formData.dueDate}T23:59:59`;
-
+    
     // Parse thành Date object rồi convert sang UTC ISO string
-    const dueDateTime = new Date(dateTimeString).toISOString();
+    const dueDateObj = new Date(dateTimeString);
+    const dueDateTime = dueDateObj.toISOString();
+    const nowUTC = new Date();
 
+// 1️⃣ Get UTC timestamp in milliseconds since Unix epoch
+    const utcTimestampMs = nowUTC.getTime(); // same as Date.now()
     try {
       setLoading(true);
       const taskData: CreateTaskRequest = {
         title: formData.title,
         description: formData.description,
         dueDate: dueDateTime,
-        categoryId: formData.categoryId ? formData.categoryId : null,
-        priority: parseInt(formData.priority)
+        priority: parseInt(formData.priority),
       };
-
+      if (dueDateObj.getTime() < utcTimestampMs) {
+      toast.error("Please choose a time in the future!");
+      return;
+      }
       await createTask(taskData);
-      toast.success('Create new task successfully!');
+      toast.success("Create new task successfully!");
 
       // Dispatch event to notify Home component
-      window.dispatchEvent(new Event('taskCreated'));
+      window.dispatchEvent(new Event("taskCreated"));
 
       // Reset form
       setFormData({
-        title: '',
-        description: '',
-        dueDate: '',
-        dueTime: '',
-        categoryId: '',
-        priority: '2'
+        title: "",
+        description: "",
+        dueDate: "",
+        dueTime: "",
+        priority: "2",
       });
       onClose();
     } catch (error: any) {
-      console.error('Error creating task:', error);
+      console.error("Error creating task:", error);
       if (error.response?.status === 401) {
-        toast.error('Login session has expired. Please login again');
-        navigate('/login');
+        toast.error("Login session has expired. Please login again");
+        navigate("/login");
       } else {
-        toast.error(error.response?.data?.message || 'Cannot create task');
+        toast.error(error.response?.data?.message || "Cannot create task");
       }
     } finally {
       setLoading(false);
@@ -121,27 +125,27 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Modal Container */}
       <div className="w-full max-w-lg bg-[#F28C48] rounded-[30px] p-8 shadow-2xl relative border-4 border-black">
-
         {/* Nút đóng nhanh */}
         <button
           onClick={onClose}
           disabled={loading}
-          className="absolute top-4 right-4 text-black hover:scale-110 transition-transform disabled:opacity-50"
+          className="absolute top-4 right-4 text-black hover:scale-110 transition-transform disabled:opacity-50 w-12 h-12 flex items-center justify-center cursor-pointer"
         >
           <X size={32} strokeWidth={3} />
         </button>
 
         {/* Header */}
-        <h2 className="font-cherry text-4xl text-white text-center mb-8 tracking-wider drop-shadow-md">
+        <h2 className="font-cherry text-4xl text-white text-center my-4 tracking-wider drop-shadow-md w-100 m-auto">
           Create a New Task
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-
           {/* Title */}
           <div>
-            <label className="block text-black font-bold mb-1 ml-2">Task Name</label>
+            <label className="block text-black font-bold mb-1 ml-2">
+              Task Name
+            </label>
             <input
               type="text"
               name="title"
@@ -155,7 +159,9 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
           {/* Date and Time Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-black font-bold mb-1 ml-2">Due Date</label>
+              <label className="block text-black font-bold mb-1 ml-2">
+                Due Date
+              </label>
               <input
                 type="date"
                 name="dueDate"
@@ -165,7 +171,9 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
               />
             </div>
             <div>
-              <label className="block text-black font-bold mb-1 ml-2">Due Time</label>
+              <label className="block text-black font-bold mb-1 ml-2">
+                Due Time
+              </label>
               <input
                 type="time"
                 name="dueTime"
@@ -177,10 +185,10 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
           </div>
 
           {/* Description */}
-
-
           <div>
-            <label className="block text-black font-bold mb-1 ml-2">Description</label>
+            <label className="block text-black font-bold mb-1 ml-2">
+              Description
+            </label>
             <textarea
               rows={3}
               name="description"
@@ -194,27 +202,21 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
           <div className="grid grid-cols-2 gap-4">
             {/* Priority Select */}
             <div>
-              <label className="block text-black font-bold mb-1 ml-2">Priority</label>
+              <label className="block text-black font-bold mb-1 ml-2">
+                Priority
+              </label>
               <select
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none appearance-none bg-white"
               >
-                {PRIORITY_OPTIONS.map(option => (
+                {PRIORITY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
               </select>
-            </div>
-            {/* Category Select */}
-            <div>
-              <label className="block text-black font-bold mb-1 ml-2">Category</label>
-              <CustomCategorySelect
-                value={formData.categoryId}
-                onChange={(val) => setFormData(prev => ({ ...prev, categoryId: val }))}
-              />
             </div>
           </div>
           {/* Footer Buttons */}
@@ -232,10 +234,9 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
               disabled={loading}
               className="bg-[#E8FF46] text-black px-10 py-3 rounded-full font-cherry text-xl border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : 'Confirm'}
+              {loading ? "Processing..." : "Confirm"}
             </button>
           </div>
-
         </form>
       </div>
     </div>

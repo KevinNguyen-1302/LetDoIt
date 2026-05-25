@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LetDoIt.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a4dcf68143a426886f4bd8172d6b30d85bee840a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f2f029ee873119ed620c7f71f6b7460dce05e17c")]
 [assembly: System.Reflection.AssemblyProductAttribute("LetDoIt.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LetDoIt.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

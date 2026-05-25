@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LetDoIt.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,31 +27,14 @@ namespace LetDoIt.Api.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: true),
                     AvatarUrl = table.Column<string>(type: "text", nullable: true),
-                    LastLogin = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    LastLogin = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    RefreshToken = table.Column<string>(type: "text", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.UserId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    ColorCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
-                    table.ForeignKey(
-                        name: "FK_Categories_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -134,31 +117,20 @@ namespace LetDoIt.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tasks",
+                name: "Projects",
                 columns: table => new
                 {
-                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
-                    Priority = table.Column<int>(type: "integer", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    Visibility = table.Column<int>(type: "integer", nullable: false)
+                    project_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProjectName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tasks", x => x.TaskId);
+                    table.PrimaryKey("PK_Projects", x => x.project_id);
                     table.ForeignKey(
-                        name: "FK_Tasks_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "CategoryId");
-                    table.ForeignKey(
-                        name: "FK_Tasks_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Projects_Users_CreatedBy",
+                        column: x => x.CreatedBy,
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
@@ -191,12 +163,94 @@ namespace LetDoIt.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Columns",
+                columns: table => new
+                {
+                    column_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    position = table.Column<int>(type: "integer", nullable: false),
+                    Project_Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Columns", x => x.column_id);
+                    table.ForeignKey(
+                        name: "FK_Columns_Projects_Project_Id",
+                        column: x => x.Project_Id,
+                        principalTable: "Projects",
+                        principalColumn: "project_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProjectMembers",
+                columns: table => new
+                {
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectMembers", x => new { x.ProjectId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_ProjectMembers_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "project_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProjectMembers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tasks",
+                columns: table => new
+                {
+                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    ColumnId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Visibility = table.Column<int>(type: "integer", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tasks", x => x.TaskId);
+                    table.ForeignKey(
+                        name: "FK_Tasks_Columns_ColumnId",
+                        column: x => x.ColumnId,
+                        principalTable: "Columns",
+                        principalColumn: "column_id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "project_id");
+                    table.ForeignKey(
+                        name: "FK_Tasks_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sessions",
                 columns: table => new
                 {
-                    SessionId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaskId = table.Column<Guid>(type: "uuid", nullable: true),
                     StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Duration = table.Column<int>(type: "integer", nullable: false),
@@ -209,7 +263,12 @@ namespace LetDoIt.Api.Migrations
                         name: "FK_Sessions_Tasks_TaskId",
                         column: x => x.TaskId,
                         principalTable: "Tasks",
-                        principalColumn: "TaskId",
+                        principalColumn: "TaskId");
+                    table.ForeignKey(
+                        name: "FK_Sessions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -237,9 +296,9 @@ namespace LetDoIt.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Categories_UserId",
-                table: "Categories",
-                column: "UserId");
+                name: "IX_Columns_Project_Id",
+                table: "Columns",
+                column: "Project_Id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FriendRequests_RecieverId",
@@ -273,14 +332,34 @@ namespace LetDoIt.Api.Migrations
                 column: "SenderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ProjectMembers_UserId",
+                table: "ProjectMembers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_CreatedBy",
+                table: "Projects",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sessions_TaskId",
                 table: "Sessions",
                 column: "TaskId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_CategoryId",
+                name: "IX_Sessions_UserId",
+                table: "Sessions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ColumnId",
                 table: "Tasks",
-                column: "CategoryId");
+                column: "ColumnId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_ProjectId",
+                table: "Tasks",
+                column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_UserId",
@@ -306,6 +385,9 @@ namespace LetDoIt.Api.Migrations
                 name: "NotificationDetails");
 
             migrationBuilder.DropTable(
+                name: "ProjectMembers");
+
+            migrationBuilder.DropTable(
                 name: "Sessions");
 
             migrationBuilder.DropTable(
@@ -318,7 +400,10 @@ namespace LetDoIt.Api.Migrations
                 name: "Tasks");
 
             migrationBuilder.DropTable(
-                name: "Categories");
+                name: "Columns");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
 
             migrationBuilder.DropTable(
                 name: "Users");
