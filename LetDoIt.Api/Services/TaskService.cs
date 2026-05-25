@@ -65,6 +65,7 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
 
+
         var dueDate = task.DueDate;
         if (dueDate.Kind == DateTimeKind.Unspecified)
         {
@@ -73,6 +74,11 @@ public class TaskService : ITaskService
         else if (dueDate.Kind == DateTimeKind.Local)
         {
             dueDate = dueDate.ToUniversalTime();
+        }
+
+        if (dueDate < DateTime.UtcNow)
+        {
+            throw new ArgumentException("Due date must be in the future!");
         }
 
         var columnId = _context.Columns
@@ -89,10 +95,13 @@ public class TaskService : ITaskService
             IsCompleted = task.IsCompleted,
             Priority = task.Priority != 0 ? task.Priority : CalculatePriority(dueDate),
             Visibility = task.Visibility,
-            CategoryId = task.CategoryId,
             UserId = userId,
             ColumnId = columnId
         };
+        if (dueDate < DateTime.UtcNow)
+        {
+            throw new ArgumentException("Due date must be in the future!");
+        }
         _context.Tasks.Add(newTask);
         await _context.SaveChangesAsync();
 
@@ -117,22 +126,6 @@ public class TaskService : ITaskService
         }
     }
 
-    public async Task<List<GetTaskResponse>> GetAllTasksAsync()
-    {
-        return await _context.Tasks
-            .Select(t => new GetTaskResponse
-            {
-                TaskId = t.TaskId,
-                CategoryId = t.CategoryId,
-                Title = t.Title,
-                Description = t.Description,
-                DueDate = t.DueDate,
-                IsCompleted = t.IsCompleted,
-                Priority = (int)t.Priority,
-                Visibility = t.Visibility,
-            })
-            .ToListAsync();
-    }
 
     public async Task<GetTaskResponse?> GetTaskByIdAsync(Guid taskId)
     {
@@ -141,7 +134,6 @@ public class TaskService : ITaskService
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
-                CategoryId = t.CategoryId,
                 Title = t.Title,
                 Description = t.Description,
                 DueDate = t.DueDate,
@@ -161,7 +153,6 @@ public class TaskService : ITaskService
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
-                CategoryId = t.CategoryId,
                 Title = t.Title,
                 Description = t.Description,
                 DueDate = t.DueDate,
@@ -206,9 +197,8 @@ public class TaskService : ITaskService
         existingTask.Description = task.Description ?? existingTask.Description;
         existingTask.DueDate = dueDate ?? existingTask.DueDate;
         existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
-        existingTask.Priority = task.Priority!= null ? (Priority)task.Priority : existingTask.Priority;
+        existingTask.Priority = task.Priority != null ? (Priority)task.Priority : existingTask.Priority;
         existingTask.Visibility = task.Visibility ?? existingTask.Visibility;
-        existingTask.CategoryId = task.CategoryId ?? existingTask.CategoryId;
         try
         {
             await _context.SaveChangesAsync();
@@ -247,7 +237,6 @@ public class TaskService : ITaskService
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
-                CategoryId = t.CategoryId,
                 ColumnId = t.ColumnId,
                 Title = t.Title,
                 Description = t.Description,
@@ -271,36 +260,63 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
         }
         var existingTask = await _context.Tasks.FindAsync(taskId);
-    if (existingTask == null) return false;
+        if (existingTask == null) return false;
 
-    existingTask.ColumnId = newColumnId;
-    
-    var targetColumn = await _context.Columns.FindAsync(newColumnId);
+        existingTask.ColumnId = newColumnId;
 
-    try
-    {
-        await _context.SaveChangesAsync();
-        return true;
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[LỖI MOVE TASK]: {ex.Message}");
-        return false;
-    }
-    }
+        var targetColumn = await _context.Columns.FindAsync(newColumnId);
 
-    public Task<List<GetTaskResponse>> GetTasksByDueDateAsync(DateTime dueDate)
-    {
-        throw new NotImplementedException();
+        try
+        {
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LỖI MOVE TASK]: {ex.Message}");
+            return false;
+        }
     }
 
-    public Task<bool> UpdateTaskCompletionStatus(Guid taskId, bool isCompleted)
+    public Task<List<GetTaskResponse>> GetTasksByDueDateAsync(DateTime dueDate, ClaimsPrincipal user)
     {
-        throw new NotImplementedException();
+        var userId = GetUserId(user);
+        if (dueDate.Kind == DateTimeKind.Unspecified)
+        {
+            dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
+        }
+        else if (dueDate.Kind == DateTimeKind.Local)
+        {
+            dueDate = dueDate.ToUniversalTime();
+        }
+        return _context.Tasks
+            .Where(t => t.UserId == userId && t.DueDate.Date == dueDate.Date)
+            .Select(t => new GetTaskResponse
+            {
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = (int)t.Priority,
+                Visibility = t.Visibility
+            })
+            .ToListAsync();
     }
 
     public Task<List<GetTaskResponse>> GetTasksByVisibilityAsync(string visibility)
     {
         throw new NotImplementedException();
     }
+
+    private static Guid GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
+        }
+        return userId;
+    }
+
+
 }

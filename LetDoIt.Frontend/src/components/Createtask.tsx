@@ -3,8 +3,6 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { createTask, type CreateTaskRequest } from "../services/taskService";
-import CustomCategorySelect from "./CustomCategorySelect";
-
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,7 +24,6 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     description: "",
     dueDate: "",
     dueTime: "",
-    categoryId: "",
     priority: "2",
   });
 
@@ -74,25 +71,26 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
     const dateTimeString = formData.dueTime
       ? `${formData.dueDate}T${formData.dueTime}:00`
       : `${formData.dueDate}T23:59:59`;
-
-    if (formData.dueDate < dateTimeString) {
-      toast.error("Please choose a time in the future!");
-      return;
-    }
-
+    
     // Parse thành Date object rồi convert sang UTC ISO string
-    const dueDateTime = new Date(dateTimeString).toISOString();
+    const dueDateObj = new Date(dateTimeString);
+    const dueDateTime = dueDateObj.toISOString();
+    const nowUTC = new Date();
 
+// 1️⃣ Get UTC timestamp in milliseconds since Unix epoch
+    const utcTimestampMs = nowUTC.getTime(); // same as Date.now()
     try {
       setLoading(true);
       const taskData: CreateTaskRequest = {
         title: formData.title,
         description: formData.description,
         dueDate: dueDateTime,
-        categoryId: formData.categoryId ? formData.categoryId : null,
         priority: parseInt(formData.priority),
       };
-
+      if (dueDateObj.getTime() < utcTimestampMs) {
+      toast.error("Please choose a time in the future!");
+      return;
+      }
       await createTask(taskData);
       toast.success("Create new task successfully!");
 
@@ -105,7 +103,6 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
         description: "",
         dueDate: "",
         dueTime: "",
-        categoryId: "",
         priority: "2",
       });
       onClose();
@@ -220,18 +217,6 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
                   </option>
                 ))}
               </select>
-            </div>
-            {/* Category Select */}
-            <div>
-              <label className="block text-black font-bold mb-1 ml-2">
-                Category
-              </label>
-              <CustomCategorySelect
-                value={formData.categoryId}
-                onChange={(val) =>
-                  setFormData((prev) => ({ ...prev, categoryId: val }))
-                }
-              />
             </div>
           </div>
           {/* Footer Buttons */}

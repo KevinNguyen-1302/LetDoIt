@@ -90,5 +90,17 @@ namespace LetDoIt.Api.Controllers
             if (!moved) return NotFound("Khong the tim thay task voi Id chi dinh hoac ColumnId khong hop le");
             return NoContent();
         }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<List<GetTaskResponse>>> GetTasksByDueDate(DateTime dueDate)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return BadRequest("Invalid user ID.");
+
+            var tasks = await _service.GetTasksByDueDateAsync(dueDate, User);
+            return Ok(tasks);
+        }
     }
 }

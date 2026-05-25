@@ -1,20 +1,19 @@
 import { useState } from "react";
-import type { TaskResponse, CategoryResponse } from "../services/taskService";
-import TaskCardDetail, { CategoryIcon } from "./TaskCardDetail";
+import TaskCardDetail from "./TaskCardDetail";
 import { Check } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Column } from "../services/columnService";
+import type { TaskResponse } from "../services/taskService";
 
 interface Props {
   task: TaskResponse;
-  categories: CategoryResponse[];
   columns: Column[];
   isOverlay?: boolean;
   isOverTrash?: boolean;
 }
 
-const TaskCard = ({ task, categories, columns, isOverlay = false, isOverTrash = false }: Props) => {
+const TaskCard = ({ task, columns, isOverlay = false, isOverTrash = false }: Props) => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const {
@@ -86,7 +85,6 @@ const TaskCard = ({ task, categories, columns, isOverlay = false, isOverTrash = 
   };
 
   // Find Category info
-  const taskCategory = categories.find((c) => c.categoryId === task.categoryId);
 
   const isDraggingOrOverlay = isDragging || isOverlay;
   const hoverClasses = isDraggingOrOverlay
@@ -113,15 +111,7 @@ const TaskCard = ({ task, categories, columns, isOverlay = false, isOverTrash = 
           } ${hoverClasses} ${cardClasses}`}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
-          {taskCategory ? (
-            <div
-              className=" items-center gap-1 font-extrabold"
-            >
-              <CategoryIcon iconName={taskCategory.iconName} size={16} />
-            </div>
-          ) : (
-            <span className="text-gray-500 text-xs">General</span>
-          )}
+          
           <h4 className={`text-sm font-bold text-black flex-1 line-clamp-2 leading-snug ${task.isCompleted ? "line-through text-gray-500 opacity-60" : ""}`}>
             {task.title}
           </h4>
@@ -165,7 +155,6 @@ const TaskCard = ({ task, categories, columns, isOverlay = false, isOverTrash = 
         task={task}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
-        categories={categories}
         columns={columns}
       />
     </>

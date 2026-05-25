@@ -1,6 +1,10 @@
+import Pomodoro from "../components/Pomodoro"
+
 const Focus = () => {
     return (
-        <div>AAAAAAAAAAA</div>
+        <div>
+            <Pomodoro />
+        </div>
     )
 }
 
