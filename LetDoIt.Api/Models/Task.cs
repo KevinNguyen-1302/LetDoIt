@@ -25,7 +25,7 @@ public class Task
     public virtual Column? Column { get; set; }
     [Required]
     public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
-
+    [ForeignKey("UserId")]
     public virtual Users? User { get; set; }
 }
 

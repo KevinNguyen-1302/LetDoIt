@@ -74,25 +74,6 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         user.HashedPassword = new PasswordHasher<Users>().HashPassword(user, request.Password);
 
         await context.SaveChangesAsync();
-
-        var defaultCategories = new List<Category>
-        {
-            new Category { Name = "Việc nhà", ColorCode = "#FF6B4A", IconName = "Home", UserId = user.UserId },
-            new Category { Name = "Công việc", ColorCode = "#4A90E2", IconName = "Briefcase", UserId = user.UserId },
-            new Category { Name = "Học tập", ColorCode = "#A29BFE", IconName = "Book", UserId = user.UserId },
-            new Category { Name = "Sức khỏe", ColorCode = "#E8FF46", IconName = "Heart", UserId = user.UserId }
-        };
-
-        var defaultColumns = new List<Column>
-        {
-            new Column { Title = "Pending", Position = 1, UserId = user.UserId },
-            new Column { Title = "In Progress", Position = 2, UserId = user.UserId },
-            new Column { Title = "Checking", Position = 3, UserId = user.UserId },
-            new Column { Title = "Done", Position = 4, UserId = user.UserId }
-        };
-
-        await context.Columns.AddRangeAsync(defaultColumns);
-        context.Categories.AddRange(defaultCategories);
         await context.SaveChangesAsync();
 
         return user;

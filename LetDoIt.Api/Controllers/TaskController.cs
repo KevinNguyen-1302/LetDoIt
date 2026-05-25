@@ -13,9 +13,6 @@ namespace LetDoIt.Api.Controllers
         private readonly ITaskService _service;
         public TaskController(ITaskService service) => _service = service;
 
-        [HttpGet]
-        public async Task<ActionResult<List<GetTaskResponse>>> GetTasks()
-            => Ok(await _service.GetAllTasksAsync());
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Models.Task?>> GetTaskById(Guid id)

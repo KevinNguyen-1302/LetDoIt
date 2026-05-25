@@ -2,6 +2,7 @@ using System;
 using System.Security.Claims;
 using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
+using LetDoIt.Api.Models;
 using LetsDoIt.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,17 +23,24 @@ public class ColumnService : IColumnService
     public async Task<bool> ChangeColumnPositionAsync(Guid columnId, int newPosition, ClaimsPrincipal user)
     {
         var userId = GetUserId(user);
-        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId && c.UserId == userId);
+        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId);
         if (column == null)
+        {
+            return false;
+        }
+
+        // Kiểm tra user có quyền truy cập project không
+        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
         {
             return false;
         }
 
         try
         {
-            // Get all columns of this user
+            // Get all columns of this project
+            var projectId = column.ProjectId;
             var allColumns = await context.Columns
-                .Where(c => c.UserId == userId)
+                .Where(c => c.ProjectId == projectId)
                 .OrderBy(c => c.Position)
                 .ToListAsync();
 
@@ -57,8 +65,14 @@ public class ColumnService : IColumnService
     {
         var userId = GetUserId(user);
 
+        // Kiểm tra user có quyền truy cập project không
+        if (!await UserCanAccessProjectAsync(userId, request.ProjectId))
+        {
+            return null;
+        }
+
         var maxPosition = await context.Columns
-                .Where(c => c.UserId == userId)
+            .Where(c => c.ProjectId == request.ProjectId)
                 .Select(c => (int?)c.Position) // Ép kiểu nullable để tránh lỗi nếu chưa có dòng nào
                 .MaxAsync() ?? 0;
 
@@ -68,7 +82,7 @@ public class ColumnService : IColumnService
         {
             Title = request.Title,
             Position = newPosition,
-            UserId = userId
+            ProjectId = request.ProjectId
         };
         context.Columns.Add(newColumn);
         await context.SaveChangesAsync();
@@ -78,11 +92,19 @@ public class ColumnService : IColumnService
     public async Task<bool> DeleteColumnAsync(Guid columnId, ClaimsPrincipal user)
     {
         var userId = GetUserId(user);
-        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId && c.UserId == userId);
+        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId);
+        
         if (column == null)
         {
             return false;
         }
+
+        // Kiểm tra user có quyền truy cập project không
+        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
+        {
+            return false;
+        }
+
         context.Columns.Remove(column);
         await context.SaveChangesAsync();
         return true;
@@ -91,9 +113,15 @@ public class ColumnService : IColumnService
     public async Task<bool> UpdateColumnAsync(Guid columnId, UpdateColumnRequest request, ClaimsPrincipal user)
     {
         var userId = GetUserId(user);
-        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId && c.UserId == userId);
+        var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId);
 
         if (column == null)
+        {
+            return false;
+        }
+
+        // Kiểm tra user có quyền truy cập project không
+        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
         {
             return false;
         }
@@ -111,6 +139,27 @@ public class ColumnService : IColumnService
             return false;
         }
     }
+
+    public async Task<List<Column>> GetColumnsByUserIdAsync(Guid userId)
+    {
+        // Lấy tất cả columns từ projects của user
+        var columns = await context.Columns
+            .Where(c => c.Project != null && c.Project.UserId == userId)
+            .OrderBy(c => c.Position)
+            .ToListAsync();
+        
+        return columns;
+    }
+
+    private async Task<bool> UserCanAccessProjectAsync(Guid userId, Guid projectId)
+    {
+        // Kiểm tra user có phải là owner của project
+        var project = await context.Projects
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId && p.UserId == userId);
+        
+        return project != null;
+    }
+
     private static Guid GetUserId(ClaimsPrincipal user)
     {
         var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -119,10 +168,5 @@ public class ColumnService : IColumnService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
         return userId;
-    }
-
-    public async Task<List<Column>> GetColumnsByUserIdAsync(Guid userId)
-    {
-        return await context.Columns.Where(c => c.UserId == userId).ToListAsync();
     }
 }

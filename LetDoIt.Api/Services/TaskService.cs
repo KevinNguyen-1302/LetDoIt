@@ -82,7 +82,7 @@ public class TaskService : ITaskService
         }
 
         var columnId = _context.Columns
-            .Where(c => c.UserId == userId && c.Title.ToLower() == "pending")
+            .Where(c => c.ColumnId == task.ColumnId && c.Title.ToLower() == "pending")
             .Select(c => c.ColumnId)
             .FirstOrDefault();
 
