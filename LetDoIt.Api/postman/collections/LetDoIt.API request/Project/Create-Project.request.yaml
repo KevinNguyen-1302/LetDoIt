@@ -1,0 +1,22 @@
+$kind: http-request
+name: Create Project
+method: POST
+url: '{{baseUrl}}/api/Project/CreateProject'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "My New Project",
+      "description": "A sample project description",
+      "createdAt": "2026-01-01T00:00:00",
+      "createdBy": "{{userId}}"
+    }

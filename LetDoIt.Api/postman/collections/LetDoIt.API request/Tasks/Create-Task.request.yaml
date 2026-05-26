@@ -1,19 +1,19 @@
 $kind: http-request
 name: Create Task
 method: POST
-url: "{{baseUrl}}/api/task"
+url: "{{baseUrl}}/api/task/create-task"
 order: 4000
 headers:
   Content-Type: application/json
+  Authorization: Bearer eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiZHlraGFuZyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiZjc0NDJiNWYtZGM5Yy00NmM2LWIyNzMtZDcyZjA5NWE4Y2VjIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiVXNlciIsImV4cCI6MTc3ODA1ODA2MCwiaXNzIjoibGV0ZG9pdGFwaSIsImF1ZCI6IkxldERvSXRBdWRpZW5jZSJ9.rtMYIblPJ2tQRcTAHhISYSyVJPpnuvwDWhDy4pD45LsgnCOiuBaLUI2eJEwG06EpNbaqE-wTta2o7sGBCCiuZw
 body:
   type: json
   content: |-
     {
-      "userId": 1,
-      "categoryId": null,
-      "title": "lam bai",
-      "description": "Task description here",
-      "dueDate": "2026-04-29T00:00:00Z",
+      "categoryId": "019df78b-3069-77d5-a050-c11d789c9c54",
+      "title": "Cho chó ăn",
+      "description": "Chỉ cho ăn thịt",
+      "dueDate": "2026-05-07T09:00:00Z",
       "isCompleted": false,
       "status": "Pending",
       "visibility": "Public"

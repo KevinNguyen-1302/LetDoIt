@@ -4,6 +4,7 @@ using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using LetDoIt.Api.Response;
 
 namespace LetDoIt.Api.Controllers
 {
@@ -49,7 +50,7 @@ namespace LetDoIt.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
             {
-                return Unauthorized("User ID not found in token.");
+                return BadRequest("Invalid user ID.");
             }
 
             var user = await authService.GetUserByIdAsync(userId);

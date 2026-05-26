@@ -3,17 +3,16 @@ name: Create Session
 url: "{{baseUrl}}/api/sessions/completed"
 method: POST
 headers:
-  - key: Authorization
-    value: Bearer {{token}}
+  Authorization: Bearer {{token}}
 body:
   type: json
   content: "{\r
 
-    \    \"startTime\": \"2026-05-04T16:04:04.803811+07:00\",\r
+    \    \"taskId\" : \"019dd7ba-f0e3-766d-9c33-1b3e4a4518a2\",\r
 
-    \    \"endTime\": \"2026-05-04T16:29:04.803811+07:00\",\r
+    \    \"startTime\": \"2026-05-04T15:50:04.803811+07:00\",\r
 
-    \    \"duration\": 26\r
+    \    \"endTime\": \"2026-05-04T16:11:04.803811+07:00\"\r
 
     }"
 order: 1777883576984

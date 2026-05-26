@@ -1,0 +1,21 @@
+$kind: http-request
+name: Save Session
+method: POST
+url: '{{baseUrl}}/api/Sessions/SaveSession'
+order: 1000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "taskId": "{{taskId}}",
+      "startTime": "2026-05-26T08:00:00",
+      "endTime": "2026-05-26T08:25:00"
+    }

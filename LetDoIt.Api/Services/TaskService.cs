@@ -81,11 +81,6 @@ public class TaskService : ITaskService
             throw new ArgumentException("Due date must be in the future!");
         }
 
-        var columnId = _context.Columns
-            .Where(c => c.ColumnId == task.ColumnId && c.Title.ToLower() == "pending")
-            .Select(c => c.ColumnId)
-            .FirstOrDefault();
-
         // Assign user ID to the task
         var newTask = new Models.Task
         {
@@ -96,7 +91,7 @@ public class TaskService : ITaskService
             Priority = task.Priority != 0 ? task.Priority : CalculatePriority(dueDate),
             Visibility = task.Visibility,
             UserId = userId,
-            ColumnId = columnId
+            //ColumnId = columnId
         };
         if (dueDate < DateTime.UtcNow)
         {

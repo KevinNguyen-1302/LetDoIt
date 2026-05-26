@@ -4,6 +4,7 @@ export interface CreateTaskRequest {
   title: string;
   description: string;
   dueDate: string; // ISO string format
+  categoryId?: string | null; // Can be null if no category selected
   priority: number; // 1=Low, 2=Medium, 3=High, 4=Urgent
 }
 
@@ -13,6 +14,8 @@ export interface TaskResponse {
   description: string;
   priority: number;
   dueDate: string;
+  categoryId?: string;
+  category?: CategoryResponse;
   userId: string;
   createdAt: string;
   isCompleted: boolean;
@@ -21,9 +24,19 @@ export interface TaskResponse {
 }
 
 
+export interface CategoryResponse {
+  categoryId: string;
+  name: string;
+  colorCode: string;
+  iconName: string;
+}
 
 export const createTask = async (taskData: CreateTaskRequest) => {
   return await api.post('/task/CreateTask', taskData);
+};
+
+export const getMyCategories = async () => {
+  return await api.get<CategoryResponse[]>('/category/GetCategories');
 };
 
 export const getMyTasks = async () => {
@@ -38,6 +51,7 @@ export interface UpdateTaskRequest {
   title?: string;
   description?: string;
   dueDate?: string;
+  categoryId?: string | null;
   priority?: number;
   isCompleted?: boolean;
   visibility?: number;
@@ -57,13 +71,14 @@ export const moveTask = async (taskId: string, newColumnId: string) => {
   });
 }
 
-export const getTasksByDueDate = async (dueDate: string) => {
-  return await api.get<TaskResponse[]>(`/task/GetTasksByDueDate?dueDate=${dueDate}`);
+export const createCategory = async (category: CategoryResponse) => {
+  return await api.post('/category/CreateCategory', category);
 }
-
-
 
 export const deleteCategory = async (categoryId: string) => {
   return await api.delete(`/category/DeleteCategory/${categoryId}`);
 }
 
+export const updateCategory = async (category: CategoryResponse) => {
+  return await api.put(`/category/UpdateCategory/${category.categoryId}`, category);
+}

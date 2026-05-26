@@ -1,8 +1,10 @@
 $kind: http-request
 name: Authenticated Only
-url: '{{baseUrl}}/api/user'
 method: GET
-headers:
-  - key: Authorization
-    value: 'Bearer {{token}}'
-order: 4000
+url: '{{baseUrl}}/api/User/AuthenticatedOnlyEndpoint'
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'

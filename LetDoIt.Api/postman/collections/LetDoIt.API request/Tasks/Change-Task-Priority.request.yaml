@@ -1,11 +1,10 @@
 $kind: http-request
 name: Change Task Priority
 method: PUT
-url: '{{baseUrl}}/api/task/{{taskId}}/priority'
+url: "{{baseUrl}}/api/task/019dd7ba-f0e3-766d-9c33-1b3e4a4518a2/priority"
 order: 7000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-

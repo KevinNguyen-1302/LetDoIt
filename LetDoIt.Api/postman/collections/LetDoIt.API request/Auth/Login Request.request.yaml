@@ -6,11 +6,11 @@ body:
   type: json
   content: "{\r
 
-    \    \"username\" : \"dykhang\",\r
+    \    \"username\" : \"Duy Khang\",\r
 
-    \    \"email\" : \"dykhang@gmail.com\",\r
+    \    \"email\" : \"duykhang.personal@gmail.com\",\r
 
-    \    \"password\" : \"khang130201\"\r
+    \    \"password\" : \"13022001A@a\"\r
 
     }"
 order: 1587502544502073
