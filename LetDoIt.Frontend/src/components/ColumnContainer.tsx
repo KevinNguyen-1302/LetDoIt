@@ -1,5 +1,5 @@
 import type { Column } from "../services/columnService";
-import type { TaskResponse, CategoryResponse } from "../services/taskService";
+import type { TaskResponse } from "../services/taskService";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
@@ -9,13 +9,12 @@ interface Props {
   column: Column;
   updateColumnTitle: (columnId: string, newTitle: string) => void;
   tasks: TaskResponse[];
-  categories: CategoryResponse[];
   columns: Column[];
   isOverTrash?: boolean;
 }
 
 const ColumnContainer = (props: Props) => {
-  const { column, updateColumnTitle, tasks, categories, columns, isOverTrash } = props;
+  const { column, updateColumnTitle, tasks, columns, isOverTrash } = props;
   const [editMode, setEditMode] = useState(false);
   const [inputTitle, setInputTitle] = useState(column.title);
 
@@ -103,7 +102,6 @@ const ColumnContainer = (props: Props) => {
               <TaskCard
                 key={task.taskId}
                 task={task}
-                categories={categories}
                 columns={columns}
                 isOverTrash={isOverTrash}
               />

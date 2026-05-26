@@ -1,0 +1,15 @@
+$kind: http-request
+name: Change Column Position
+method: PUT
+url: '{{baseUrl}}/api/Column/ChangeColumnPosition'
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+queryParams:
+  - key: columnId
+    value: '{{columnId}}'
+  - key: newPosition
+    value: '2'

@@ -1,0 +1,26 @@
+$kind: http-request
+name: Create Task
+method: POST
+url: '{{baseUrl}}/api/Task/CreateTask'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": "{{userId}}",
+      "title": "My New Task",
+      "description": "Task description here",
+      "dueDate": "2026-12-31T00:00:00",
+      "isCompleted": false,
+      "priority": 2,
+      "columnId": null,
+      "visibility": 1
+    }

@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get My Task
+method: GET
+url: '{{baseUrl}}/api/Task/GetMyTask'
+order: 7000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'

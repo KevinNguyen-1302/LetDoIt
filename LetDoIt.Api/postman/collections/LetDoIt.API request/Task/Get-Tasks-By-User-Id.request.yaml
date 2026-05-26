@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get Tasks By User Id
+method: GET
+url: '{{baseUrl}}/api/Task/GetTasksByUserId'
+order: 2000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'

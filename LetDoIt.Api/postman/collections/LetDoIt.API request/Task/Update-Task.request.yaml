@@ -1,0 +1,24 @@
+$kind: http-request
+name: Update Task
+method: PUT
+url: '{{baseUrl}}/api/Task/UpdateTask/{{taskId}}'
+order: 4000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "Updated Task Title",
+      "description": "Updated description",
+      "dueDate": "2026-12-31T00:00:00",
+      "isCompleted": false,
+      "priority": 3,
+      "visibility": 1
+    }

@@ -6,17 +6,17 @@ body:
   type: json
   content: "{\r
 
-    \    \"username\": \"dykhang\",\r
+    \    \"username\": \"dykh3ng\",\r
 
     \    \"password\" : \"khang130201\",\r
 
-    \    \"email\": \"dykhang@gmail.com\",\r
+    \    \"email\": \"dykheng@gmail.com\",\r
 
-    \    \"displayname\" : \"Duy khan9\",\r
+    \    \"displayname\" : \"Nguyen Vo Duy Khang\",\r
 
     \    \"dob\": \"2001-02-13\",\r
 
-    \    \"phonenumber\": \"0909090909\"\r
+    \    \"phonenumber\": \"1234567890\"\r
 
     }"
 order: 1777019121550

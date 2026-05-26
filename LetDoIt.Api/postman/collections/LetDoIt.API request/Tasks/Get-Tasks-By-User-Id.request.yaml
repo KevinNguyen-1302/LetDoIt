@@ -1,5 +1,5 @@
 $kind: http-request
 name: Get Tasks By User Id
 method: GET
-url: '{{baseUrl}}/api/task/user/{{userId}}'
+url: "{{baseUrl}}/api/task/user/f7442b5f-dc9c-46c6-b273-d72f095a8cec"
 order: 3000

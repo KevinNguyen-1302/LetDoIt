@@ -27,7 +27,7 @@ const TopNav = () => {
         }
 
         const data = await response.json();
-        setName(data.username || '');
+        setName(data.data?.username || '');
       } catch (error) {
         console.error('Error fetching user:', error);
         setName('');

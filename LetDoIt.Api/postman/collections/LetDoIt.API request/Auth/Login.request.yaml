@@ -1,0 +1,26 @@
+$kind: http-request
+name: Login
+method: POST
+url: '{{baseUrl}}/api/User/Login'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "johndoe",
+      "email": "johndoe@example.com",
+      "password": "Password1@"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      const json = pm.response.json();
+      if (json.data && json.data.accessToken) {
+          pm.environment.set("token", json.data.accessToken);
+      } else if (json.accessToken) {
+          pm.environment.set("token", json.accessToken);
+      }

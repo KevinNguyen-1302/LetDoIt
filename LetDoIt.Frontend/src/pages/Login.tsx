@@ -23,13 +23,25 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // ✅ Lưu token và refresh token
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+        // 🔍 Debug: kiểm tra cấu trúc response
+        console.log("Response data:", data);
+
+        // ✅ Lưu token và refresh token (lấy từ data.data vì middleware wrap)
+        const accessToken = data.data?.accessToken || data.accessToken;
+        const refreshToken = data.data?.refreshToken || data.refreshToken;
+
+        if (!accessToken) {
+          console.error("accessToken không tồn tại trong response");
+          handleApiError(500, "Lỗi: Không nhận được token từ server");
+          return;
+        }
+
+        localStorage.setItem("token", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
         
         // Decode token để lấy userId
         try {
-          const decoded: any = jwtDecode(data.accessToken);
+          const decoded: any = jwtDecode(accessToken);
           const userId = decoded.nameid || decoded.sub; // nameid hoặc sub tùy backend
           if (userId) {
             localStorage.setItem("userId", userId);

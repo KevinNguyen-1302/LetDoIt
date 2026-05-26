@@ -1,0 +1,13 @@
+$kind: http-request
+name: Get Tasks By Due Date
+method: GET
+url: '{{baseUrl}}/api/Task/GetTasksByDueDate'
+order: 9000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
+queryParams:
+  - key: dueDate
+    value: '2026-12-31T00:00:00'

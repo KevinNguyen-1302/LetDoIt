@@ -67,19 +67,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseRouting();
-
 app.UseCors("AllowReactApp");
 
-app.MapGet("/health/db", async (LetDoItContext db) =>
-{
-    bool canConnect = await db.Database.CanConnectAsync();
-    return canConnect ? Results.Ok("DB connected") : Results.Problem("DB connection failed");
-});
-
-app.MapGet("/", () => "LetDoIt API is running");
+// ⚠️ THỨ TỰ QUAN TRỌNG:
+app.UseMiddleware<ResponseWrapperMiddleware>();    // ← Outer layer (bắt đầu trước)
+app.UseMiddleware<ExceptionHandlingMiddleware>();  // ← Inner layer
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.MigrateDb();

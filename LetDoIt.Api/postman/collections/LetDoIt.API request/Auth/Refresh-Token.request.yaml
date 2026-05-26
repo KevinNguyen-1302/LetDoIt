@@ -1,11 +1,15 @@
 $kind: http-request
 name: Refresh Token
-url: '{{baseUrl}}/api/user/refresh-token'
 method: POST
+url: '{{baseUrl}}/api/User/RefreshToken'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
 body:
   type: json
   content: |-
     {
-      "refreshToken": "{{refreshToken}}"
+      "userId": "{{userId}}",
+      "refreshToken": "your-refresh-token-here"
     }
-order: 3000
