@@ -45,7 +45,7 @@ public class ResponseWrapperMiddleware
                     : JsonSerializer.Deserialize<object>(bodyText, _jsonOptions);
 
                 // Wrap vào ApiResponse format
-                var wrappedResponse = ApiResponse<object>.Success(data, "Success");
+                var wrappedResponse = ApiResponse<object?>.Success(data, "Success");
                 var jsonResponse = JsonSerializer.Serialize(wrappedResponse, _jsonOptions);
 
                 // Ghi response đã format vào original stream

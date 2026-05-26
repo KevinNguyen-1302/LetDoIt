@@ -5,13 +5,9 @@ using LetsDoIt.Models;
 
 namespace LetDoIt.Api.Services;
 
-public class ProjectService : IProjectService
+public class ProjectService(LetDoItContext context) : IProjectService
 {
-    private readonly LetDoItContext _context;
-    public ProjectService(LetDoItContext context)
-    {
-        _context = context;
-    }
+    private readonly LetDoItContext _context = context;
 
     public Task<bool> ChangeProjectAuthorAsync(Guid projectId, Guid newAuthorId, ClaimsPrincipal user)
     {
@@ -28,7 +24,7 @@ public class ProjectService : IProjectService
             CreatedAt = DateTime.UtcNow,
             UserId = userId
         };
-        if (_context.Projects.Any(p => p.Title.Equals(request.Title, StringComparison.CurrentCultureIgnoreCase) && p.UserId == userId))
+        if (_context.Projects.Any(p => p.Title.Equals(request.Title) && p.UserId == userId))
         {
             throw new ArgumentException("Bạn đã có một project với tên này rồi!");
         }
