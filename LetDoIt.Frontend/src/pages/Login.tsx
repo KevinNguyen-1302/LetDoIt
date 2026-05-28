@@ -42,9 +42,14 @@ const Login = () => {
         // Decode token để lấy userId
         try {
           const decoded: any = jwtDecode(accessToken);
-          const userId = decoded.nameid || decoded.sub; // nameid hoặc sub tùy backend
+          console.log("🔍 Decoded token claims:", Object.keys(decoded)); // Debug: xem tất cả claims
+          const userId = decoded.sub || decoded.nameid || decoded.userId || decoded.id;
+          console.log("📝 Extracted userId:", userId); // Debug
           if (userId) {
             localStorage.setItem("userId", userId);
+            console.log("✅ userId saved to localStorage:", userId);
+          } else {
+            console.error("❌ No userId found in token claims:", decoded);
           }
         } catch (error) {
           console.error("Failed to decode token:", error);

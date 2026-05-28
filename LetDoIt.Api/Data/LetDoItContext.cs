@@ -64,10 +64,16 @@ public class LetDoItContext(DbContextOptions<LetDoItContext> options) : DbContex
             .WithMany() // Giả sử Users không có collection của Friend
             .HasForeignKey(f => f.User2Id)
             .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<ProjectMember>()
+        modelBuilder.Entity<ProjectMember>()
             .HasOne(pm => pm.Project)
-            .WithMany()
+            .WithMany(p => p.ProjectMembers)
             .HasForeignKey(pm => pm.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ProjectMember>()
+            .HasOne(pm => pm.User)
+            .WithMany()
+            .HasForeignKey(pm => pm.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

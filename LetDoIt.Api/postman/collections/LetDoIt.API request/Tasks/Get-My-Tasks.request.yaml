@@ -1,8 +1,0 @@
-$kind: http-request
-name: Get My Tasks
-url: '{{baseUrl}}/api/task/my-tasks'
-method: GET
-headers:
-  - key: Authorization
-    value: 'Bearer {{token}}'
-order: 9000

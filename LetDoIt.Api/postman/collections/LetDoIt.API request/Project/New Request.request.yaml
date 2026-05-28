@@ -1,0 +1,5 @@
+$kind: http-request
+name: New Request
+url: "{{baseUrl}}/api/project/GetProjectsByUserId/1aa97f1f-58b6-4152-b294-d1a3db42baaa"
+method: GET
+order: 370852981900181

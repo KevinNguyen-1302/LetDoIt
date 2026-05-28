@@ -4,7 +4,7 @@ const Pomodoro = () => {
             <div className="text-4xl font-bold mb-4">
                 Break time! New session starts in:
             </div>
-            <div className="border rounded-lg border-4 border-amber-600 p-6 text-center text-4xl font-bold bg-[#f5f5f5] shadow-[20px_20px_0px_0px_rgba(120,69,0,1)]">
+            <div className=" rounded-lg border-4 border-amber-600 p-6 text-center text-4xl font-bold bg-[#f5f5f5] shadow-[20px_20px_0px_0px_rgba(120,69,0,1)]">
                 25:00
             </div>
         </div>

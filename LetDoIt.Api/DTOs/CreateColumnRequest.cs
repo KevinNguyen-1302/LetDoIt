@@ -1,5 +1,3 @@
-using System;
-
 namespace LetDoIt.Api.DTOs;
 
 public class CreateColumnRequest

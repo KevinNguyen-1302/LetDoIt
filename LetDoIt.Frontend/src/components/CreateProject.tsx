@@ -86,7 +86,7 @@ const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Modal Container */}
-      <div className="w-full max-w-lg bg-[#F28C48] rounded-[30px] p-8 shadow-2xl relative border-4 border-black">
+      <div className="w-full max-w-lg bg-[#7af471] rounded-[30px] p-8 shadow-2xl relative border-4 border-black">
         {/* Nút đóng nhanh */}
         <button
           onClick={onClose}
@@ -97,7 +97,7 @@ const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
         </button>
 
         {/* Header */}
-        <h2 className="font-cherry text-4xl text-white text-center my-4 tracking-wider drop-shadow-md w-100 m-auto">
+        <h2 className="font-cherry text-4xl text-white text-center my-4 tracking-wider drop-shadow-lg w-100 m-auto">
           Create a New Project
         </h2>
 

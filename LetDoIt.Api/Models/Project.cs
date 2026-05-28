@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using LetDoIt.Api.Models;
+using LetsDoIt.Models;
 
-namespace LetsDoIt.Models
+namespace LetDoIt.Api.Models
 {
     [Table("Projects")]
     public class Project
@@ -20,15 +20,17 @@ namespace LetsDoIt.Models
         [Required]
         [Column("CreatedBy")]
         public Guid UserId { get; set; }
+        public bool IsDeleted { get; set; } = false;
 
         // Navigation property (Nếu bro có class User)
         [ForeignKey("UserId")]
         public virtual Users? User { get; set; }
 
         // Quan hệ 1-N: Một project có nhiều Task
-        public virtual ICollection<LetDoIt.Api.Models.Task> Tasks { get; set; } = new List<LetDoIt.Api.Models.Task>();
+        public virtual ICollection<Task> Tasks { get; set; } = new List<Task>();
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public virtual ICollection<ProjectMember> ProjectMembers { get; set; } = [];
     }
 }

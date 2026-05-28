@@ -1,3 +1,8 @@
 $kind: collection
-name: LetDoIt.API request
-description: 'Full API collection for the LetDoIt application. Covers Auth, Project, Column, Task, and Session endpoints. Uses {{baseUrl}} from the LetDoIt - Local environment.'
+name: 'LetDoIt API'
+description: 'Complete API collection for the LetDoIt task management application.'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{token}}'
