@@ -6,4 +6,5 @@ public class GetProjectRequest
     public DateTime CreatedAt { get; set; }
     public string Role { get; set; } = string.Empty;
     public int NumberOfMembers { get; set; }
+    public string AuthorName { get; set; } = string.Empty;
 }

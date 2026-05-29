@@ -22,7 +22,7 @@ namespace LetDoIt.Api.Controllers
             return Ok(task);
         }
 
-        
+
         [Authorize(Roles = "User")]
         [HttpGet]
         public async Task<ActionResult<Models.Task?>> GetTasksByUserId()
@@ -30,7 +30,7 @@ namespace LetDoIt.Api.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdClaim, out var userId))
                 return BadRequest("Invalid user ID.");
-                
+
             var tasks = await _service.GetTasksByUserId(userId);
             if (tasks is null) return NotFound("Khong the tim thay task voi UserId chi dinh");
             return Ok(tasks);
@@ -38,9 +38,9 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPost]
-        public async Task<ActionResult<Models.Task>> CreateTask(Models.Task task)
+        public async Task<ActionResult<Models.Task>> CreateTask([FromBody] CreateTaskRequest request)
         {
-            var createdTask = await _service.CreateTaskAsync(task, User);
+            var createdTask = await _service.CreateTaskAsync(request, User);
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.TaskId }, createdTask);
         }
 

@@ -1,4 +1,4 @@
-﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -54,6 +54,19 @@ namespace LetDoIt.Api.Controllers
             }
 
             var user = await authService.GetUserByIdAsync(userId);
+            if (user is null)
+            {
+                return NotFound("User not found.");
+            }
+
+            return Ok(new UserDto { UserId = user.UserId, Username = user.Username, Email = user.Email });
+        }
+
+        [Authorize]
+        [HttpGet("{username}")]
+        public async Task<ActionResult<UserDto>> GetByUsername(string username)
+        {
+            var user = await authService.GetUserByUsernameAsync(username);
             if (user is null)
             {
                 return NotFound("User not found.");

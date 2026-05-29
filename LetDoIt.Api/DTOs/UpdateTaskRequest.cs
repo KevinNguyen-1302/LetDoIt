@@ -10,6 +10,6 @@ namespace LetDoIt.Api.DTOs
         public DateTime? DueDate { get; set; }
         public bool? IsCompleted { get; set; }
         public int? Priority { get; set; }
-        public TaskVisibility? Visibility { get; set; } = TaskVisibility.Private; // Default to Private
+        public int? Visibility { get; set; } = 2; // Default to Private
     }
 }

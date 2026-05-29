@@ -1,18 +1,17 @@
 import api from "./api";
 
-
 export interface Project {
   title: string;
   projectId: string;
   createdAt: string;
   role: string;
   numberOfMembers?: number;
+  authorName?: string;
 }
 
 export interface CreateProjectRequest {
-    title: string;
+  title: string;
 }
-
 
 export const createProject = async (request: CreateProjectRequest) => {
   const response = await api.post<any>(`/Project/CreateProject`, request);
@@ -20,25 +19,33 @@ export const createProject = async (request: CreateProjectRequest) => {
   return response.data?.data;
 };
 
-export const getProjectsByUserId = async (userId: string, pageNumber: number, pageSize: number, searchTerm?: string) => {
-  const response = await api.get<any>(`/Project/GetProjectsByUserId/${userId}`, {
-    params: { pageNumber, pageSize, searchTerm }
-  });
+export const getProjectsByUserId = async (
+  userId: string,
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+) => {
+  const response = await api.get<any>(
+    `/Project/GetProjectsByUserId/${userId}`,
+    {
+      params: { pageNumber, pageSize, searchTerm },
+    },
+  );
   console.log("📦 API Response:", response.data); // Debug response
-  // Response wrapped by middleware: { result, error, message, data: { data: Project[], totalCount: number } }
   const responseData = response.data?.data || {};
   console.log("🔍 Response data structure:", responseData); // Debug structure
-  
-  // Middleware converts camelCase, so Data becomes data
+
   const data = responseData.data || responseData.Data || [];
   const totalCount = responseData.totalCount || responseData.TotalCount || 0;
-  
+
   console.log("✅ Extracted projects:", { count: data.length, totalCount }); // Debug
   return { projects: data, totalCount };
 };
 
 export const updateProject = async (projectId: string, title: string) => {
-  const response = await api.put<any>(`/Project/UpdateProject/${projectId}`, { title });
+  const response = await api.put<any>(`/Project/UpdateProject/${projectId}`, {
+    title,
+  });
   return response.data?.data;
 };
 
@@ -47,15 +54,56 @@ export const deleteProject = async (projectId: string) => {
   return response.data?.data;
 };
 
-export const changeProjectAuthor = async (projectId: string, newAuthorId: string) => {
-  const response = await api.put<any>(`/Project/ChangeProjectAuthor/${projectId}`, { newAuthorId });
+export const changeProjectAuthor = async (
+  projectId: string,
+  newAuthorId: string,
+) => {
+  const response = await api.put<any>(
+    `/Project/ChangeProjectAuthor/${projectId}`,
+    null,
+    { params: { newAuthorId } },
+  );
   return response.data?.data;
 };
 
-export const getProjectsByUserIdWithDapper = async (userId: string, pageNumber: number, pageSize: number, searchTerm?: string) => {
-  const response = await api.get<any>(`/Project/GetProjectsByUserIdWithDapper`, {
-    params: { userId, pageNumber, pageSize, searchTerm }
-  });
+export const getProjectsByUserIdWithDapper = async (
+  userId: string,
+  pageNumber: number,
+  pageSize: number,
+  searchTerm?: string,
+) => {
+  const response = await api.get<any>(
+    `/Project/GetProjectsByUserIdWithDapper`,
+    {
+      params: { userId, pageNumber, pageSize, searchTerm },
+    },
+  );
   return response.data?.data;
-}
+};
 
+export const getProjectMembers = async (projectId: string) => {
+  const response = await api.get<any>(
+    `/Project/GetProjectMembers/${projectId}`,
+  );
+  return response.data?.data;
+};
+
+export const addMemberToProject = async (
+  projectId: string,
+  memberId: string,
+) => {
+  const response = await api.post<any>(
+    `/Project/AddMemberToProject/${projectId}/${memberId}`,
+  );
+  return response.data?.data;
+};
+
+export const removeMemberFromProject = async (
+  projectId: string,
+  memberId: string,
+) => {
+  const response = await api.delete<any>(
+    `/Project/RemoveMemberFromProject/${projectId}/${memberId}`,
+  );
+  return response.data?.data;
+};

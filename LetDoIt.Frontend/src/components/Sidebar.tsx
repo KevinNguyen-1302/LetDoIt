@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Timer, LineChart, House, Menu, Plus } from "lucide-react";
+import { Calendar, Timer, LineChart, House, Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import CreateTaskModal from "./Createtask";
@@ -14,7 +14,7 @@ const Sidebar = () => {
 
   const getLinkClasses = (path: string) =>
     clsx(
-      "flex items-center py-3 rounded-xl transition-all duration-200",
+      "flex items-center py-3 rounded-xl transition-all duration-500",
       isExpanded ? "gap-3 px-3" : "justify-center px-2",
       location.pathname === path
         ? "bg-[#a1dafd] text-[#0f1012] text-base md:text-lg font-bold border border-[#090706]"

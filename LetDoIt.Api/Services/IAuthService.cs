@@ -1,4 +1,4 @@
-﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 
 namespace LetDoIt.Api.Services
@@ -9,6 +9,6 @@ namespace LetDoIt.Api.Services
         Task<TokenResponseDto?> LoginAsync(LoginRequest request);
         Task<TokenResponseDto?> RefreshTokenAsync(RefreshTokenRequestDto request);
         Task<Users?> GetUserByIdAsync(Guid userId);
-
+        Task<Users?> GetUserByUsernameAsync(string username);
     }
 }

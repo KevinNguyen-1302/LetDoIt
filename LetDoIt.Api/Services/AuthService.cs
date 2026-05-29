@@ -26,6 +26,11 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         return user;
     }
 
+    public async Task<Users?> GetUserByUsernameAsync(string username)
+    {
+        return await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+    }
+
     public async Task<TokenResponseDto?> LoginAsync(LoginRequest request)
     {
         var user = await context.Users.FirstOrDefaultAsync(u => u.Username == request.Username && u.Email == request.Email);

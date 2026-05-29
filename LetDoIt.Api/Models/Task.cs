@@ -8,8 +8,11 @@ public class Task
 {
     [Key]
     public Guid TaskId { get; set; }
+    [Column("created_by")]
     [Required]
-    public Guid UserId { get; set; }
+    public Guid CreatedBy { get; set; }
+    [Column("assignee_id")]
+    public Guid? AssigneeId { get; set; }
     [Required]
     [MaxLength(200)]
     public string Title { get; set; } = null!;
@@ -18,18 +21,21 @@ public class Task
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; } = false; // Default to not completed
     public Priority Priority { get; set; } = Priority.Medium; // Default to Medium
-    
+
     public Guid? ColumnId { get; set; } // Foreign Key to Column.Id (nullable for now)
 
     [ForeignKey("ColumnId")]
     public virtual Column? Column { get; set; }
     [Required]
-    public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
-    [ForeignKey("UserId")]
+    public Visibility Visibility { get; set; } = Visibility.Public; // Default to Private
+    [ForeignKey("CreatedBy")]
+    [InverseProperty("Tasks")]
     public virtual Users? User { get; set; }
+    [ForeignKey("AssigneeId")]
+    public virtual Users? Assignee { get; set; }
 }
 
-public enum TaskVisibility
+public enum Visibility
 {
     Private = 1,
     Public = 2

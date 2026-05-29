@@ -12,6 +12,6 @@ namespace LetDoIt.Api.DTOs
         public bool IsCompleted { get; set; } = false; // Default to not completed
         public int Priority { get; set; } = 3; // Default to Medium
         public Guid? ColumnId { get; set; }
-        public TaskVisibility Visibility { get; set; } = TaskVisibility.Private; // Default to Private
+        public int Visibility { get; set; } = 2; // Default to Private
     }
 }

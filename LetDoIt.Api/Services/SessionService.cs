@@ -25,7 +25,7 @@ namespace LetDoIt.Api.Services
             if (request.TaskId.HasValue)
             {
                 var isTaskOwnedByUser = await _context.Tasks
-                    .AnyAsync(t => t.TaskId == request.TaskId.Value && t.UserId == userId);
+                    .AnyAsync(t => t.TaskId == request.TaskId.Value && t.CreatedBy == userId);
 
                 if (!isTaskOwnedByUser)
                 {
@@ -64,7 +64,7 @@ namespace LetDoIt.Api.Services
             var newSession = new Session
             {
                 UserId = userId,
-                TaskId = request.TaskId, 
+                TaskId = request.TaskId,
                 StartTime = request.StartTime.ToUniversalTime(),
                 EndTime = request.EndTime.ToUniversalTime(),
                 Duration = (int)request.EndTime.Subtract(request.StartTime).TotalMinutes,

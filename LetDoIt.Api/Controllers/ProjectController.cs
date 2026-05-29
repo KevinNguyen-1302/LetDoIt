@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Response;
 using LetDoIt.Api.Services;
@@ -11,7 +12,7 @@ namespace LetDoIt.Api.Controllers
     public class ProjectController(IProjectService service) : ControllerBase
     {
         private readonly IProjectService _service = service;
-        [Authorize(Roles = "User")]
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ApiResponse<object>>> CreateProject(CreateProjectRequest request)
         {
@@ -19,7 +20,7 @@ namespace LetDoIt.Api.Controllers
             return Ok(new { Data = project });
         }
 
-        [Authorize(Roles = "Manager")]
+        [Authorize]
         [HttpPut("{projectId}")]
         public async Task<ActionResult<ApiResponse<object>>> UpdateProject(Guid projectId, UpdateProjectRequest request)
         {
@@ -29,7 +30,7 @@ namespace LetDoIt.Api.Controllers
             return Ok();
         }
 
-        [Authorize(Roles = "Manager")]
+        [Authorize]
         [HttpDelete("{projectId}")]
         public async Task<ActionResult<ApiResponse<object>>> DeleteProject(Guid projectId)
         {
@@ -55,8 +56,50 @@ namespace LetDoIt.Api.Controllers
         {
             var (projects, totalCount) = await _service.GetProjectsByUserIdAsyncWithDapper(userId, pageNumber, pageSize, searchTerm);
             if (projects == null)
-                throw new BusinessException(1005, "Cannot get projects with Dapper", 404);
+                throw new BusinessException(1005, "Cannot get projects", 404);
             return Ok(new { Data = projects, TotalCount = totalCount });
+        }
+
+        [Authorize]
+        [HttpPut("{projectId}")]
+        public async Task<ActionResult<ApiResponse<object>>> ChangeProjectAuthor(Guid projectId, Guid currentAuthorId, Guid newAuthorId, ClaimsPrincipal user)
+        {
+            await _service.ChangeProjectAuthorAsync(projectId, currentAuthorId, newAuthorId, user);
+            if (projectId == Guid.Empty)
+                throw new BusinessException(1006, "Cannot change project author", 400);
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpGet("{projectId}")]
+        public async Task<ActionResult<ApiResponse<object>>> GetProjectMembers(Guid projectId)
+        {
+            var members = await _service.GetMembersByProjectIdAsync(projectId);
+            return Ok(new { Data = members });
+        }
+
+        [Authorize]
+        [HttpPost("{projectId}/members/{memberId}")]
+        public async Task<ActionResult<ApiResponse<object>>> AddMemberToProject(Guid projectId, Guid memberId, ClaimsPrincipal user)
+        {
+            await _service.AddMemberToProjectAsync(projectId, memberId, user);
+            if (projectId == Guid.Empty)
+                throw new BusinessException(1007, "Cannot find project", 404);
+            if (memberId == Guid.Empty)
+                throw new BusinessException(1009, "Cannot find member", 404);
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete("{projectId}/members/{memberId}")]
+        public async Task<ActionResult<ApiResponse<object>>> RemoveMemberFromProject(Guid projectId, Guid memberId, ClaimsPrincipal user)
+        {
+            await _service.RemoveMemberFromProjectAsync(projectId, memberId, user);
+            if (projectId == Guid.Empty)
+                throw new BusinessException(1008, "Cannot find project", 404);
+            if (memberId == Guid.Empty)
+                throw new BusinessException(1009, "Cannot find member", 404);
+            return Ok();
         }
     }
 }

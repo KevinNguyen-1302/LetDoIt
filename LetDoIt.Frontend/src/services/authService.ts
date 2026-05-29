@@ -76,3 +76,8 @@ export const logout = () => {
 export const getCurrentUserId = () => {
   return localStorage.getItem('userId');
 };
+
+export const getUserByUsername = async (username: string) => {
+  const response = await api.get(`/user/GetByUsername/${username}`);
+  return response.data;
+};

@@ -36,7 +36,7 @@ public class TaskService : ITaskService
         return true;
     }
 
-    private Priority CalculatePriority(DateTime dueDate)
+    private static Priority CalculatePriority(DateTime dueDate)
     {
         // ✅ Đảm bảo dueDate là UTC trước khi so sánh
         if (dueDate.Kind != DateTimeKind.Utc)
@@ -55,7 +55,7 @@ public class TaskService : ITaskService
         else return Priority.Low;                              // Còn xa
     }
 
-    public async Task<Models.Task> CreateTaskAsync(Models.Task task, ClaimsPrincipal user)
+    public async Task<Models.Task> CreateTaskAsync(CreateTaskRequest request, ClaimsPrincipal user)
     {
         // Extract user ID from claims
         var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -66,7 +66,7 @@ public class TaskService : ITaskService
         }
 
 
-        var dueDate = task.DueDate;
+        var dueDate = request.DueDate;
         if (dueDate.Kind == DateTimeKind.Unspecified)
         {
             dueDate = DateTime.SpecifyKind(dueDate, DateTimeKind.Utc);
@@ -84,14 +84,15 @@ public class TaskService : ITaskService
         // Assign user ID to the task
         var newTask = new Models.Task
         {
-            Title = task.Title,
-            Description = task.Description,
+            Title = request.Title,
+            Description = request.Description,
             DueDate = dueDate,
-            IsCompleted = task.IsCompleted,
-            Priority = task.Priority != 0 ? task.Priority : CalculatePriority(dueDate),
-            Visibility = task.Visibility,
-            UserId = userId,
-            //ColumnId = columnId
+            IsCompleted = request.IsCompleted,
+            Priority = request.Priority != 0 ? (Priority)request.Priority : CalculatePriority(dueDate),
+            Visibility = (Visibility)request.Visibility,
+            CreatedBy = userId,
+            AssigneeId = request.AssigneeId,
+            ColumnId = request.ColumnId
         };
         if (dueDate < DateTime.UtcNow)
         {
@@ -134,7 +135,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = t.Visibility,
+                Visibility = (int)t.Visibility,
             })
             .FirstOrDefaultAsync();
         return result;
@@ -144,7 +145,7 @@ public class TaskService : ITaskService
     public async Task<List<GetTaskResponse>> GetTasksByUserId(Guid userId)
     {
         return await _context.Tasks
-            .Where(t => t.UserId == userId)
+            .Where(t => t.CreatedBy == userId || t.AssigneeId == userId)
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
@@ -153,7 +154,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = t.Visibility
+                Visibility = (int)t.Visibility
             })
             .ToListAsync();
     }
@@ -164,7 +165,7 @@ public class TaskService : ITaskService
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
         {
-            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
+            throw new UnauthorizedAccessException("Token invalid!");
         }
 
         var existingTask = await _context.Tasks.FindAsync(taskId);
@@ -193,7 +194,7 @@ public class TaskService : ITaskService
         existingTask.DueDate = dueDate ?? existingTask.DueDate;
         existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
         existingTask.Priority = task.Priority != null ? (Priority)task.Priority : existingTask.Priority;
-        existingTask.Visibility = task.Visibility ?? existingTask.Visibility;
+        existingTask.Visibility = task.Visibility != null ? (Visibility)task.Visibility : existingTask.Visibility;
         try
         {
             await _context.SaveChangesAsync();
@@ -228,7 +229,7 @@ public class TaskService : ITaskService
 
         // Query DB based on token ID
         var tasks = await _context.Tasks
-            .Where(t => t.UserId == userId)
+            .Where(t => t.CreatedBy == userId || t.AssigneeId == userId)
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
@@ -238,7 +239,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = t.Visibility
+                Visibility = (int)t.Visibility
             })
             .OrderBy(t => t.DueDate) // Sắp xếp theo DueDate tăng dần
             .ToListAsync();
@@ -285,7 +286,7 @@ public class TaskService : ITaskService
             dueDate = dueDate.ToUniversalTime();
         }
         return _context.Tasks
-            .Where(t => t.UserId == userId && t.DueDate.Date == dueDate.Date)
+            .Where(t => t.CreatedBy == userId || t.AssigneeId == userId && t.DueDate.Date == dueDate.Date)
             .Select(t => new GetTaskResponse
             {
                 Title = t.Title,
@@ -293,7 +294,7 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = t.Visibility
+                Visibility = (int)t.Visibility
             })
             .ToListAsync();
     }
