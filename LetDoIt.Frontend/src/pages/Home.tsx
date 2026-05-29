@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { ArrowBigDown, Plus } from "lucide-react";
 import { Flex } from "antd";
 import { Pagination } from "antd";
 
@@ -88,10 +88,10 @@ const Home = () => {
       </p>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center justify-center gap-2 mt-8 px-4 md:px-6 py-4 md:py-10 bg-green-600 text-white rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black w-full max-w-[280px] md:max-w-md mx-auto"
+        className="text-xl flex items-center justify-center gap-2 mt-8 px-4 md:px-6 py-4 md:py-10 bg-green-600 text-white rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black w-full max-w-70 md:max-w-md mx-auto"
       >
-        <Plus size={20} />
-        <span className="text-sm md:text-base">Create Your Project</span>
+        <Plus size={24} />
+        <span className="md:text-lg lg:text-2xl">Create Your Project</span>
       </button>
       <span className="block w-[80%] max-w-3xl h-1 bg-black mt-8 md:mt-10 mx-auto rounded-full" />
 
@@ -107,7 +107,7 @@ const Home = () => {
               Live
             </span>
             <h2 className="text-2xl text-black tracking-tight">
-              Your Projects
+              Your Projects <ArrowBigDown className="inline-block" />
             </h2>
           </div>
 
@@ -140,6 +140,7 @@ const Home = () => {
                 numberOfMembers={project.numberOfMembers || 1}
                 authorName={project.authorName}
                 onUpdate={fetchProjects}
+
               />
             ))}
           </div>

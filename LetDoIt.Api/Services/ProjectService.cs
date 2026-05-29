@@ -72,7 +72,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
     {
         var userId = GetUserId(user);
 
-        if (await _context.Projects.AnyAsync(p => p.Title.Equals(request.Title) && p.UserId == userId))
+        if (await _context.Projects.AnyAsync(p => p.Title.Equals(request.Title) && p.UserId == userId && !p.IsDeleted))
         {
             throw new ArgumentException("You already have a project with this name!");
         }
@@ -137,7 +137,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
         var projectDtos = await _context.Projects
             .Include(p => p.User)
             .OrderByDescending(p => p.CreatedAt)
-            .Where(p => p.ProjectMembers.Any(pm => pm.UserId == userId))
+            .Where(p => !p.IsDeleted && p.ProjectMembers.Any(pm => pm.UserId == userId))
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
