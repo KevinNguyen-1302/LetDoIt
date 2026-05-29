@@ -7,7 +7,7 @@ namespace LetDoIt.Api.Services
     public interface ITaskService
     {
         Task<GetTaskResponse?> GetTaskByIdAsync(Guid taskId);
-        Task<Models.Task> CreateTaskAsync(Models.Task task, ClaimsPrincipal user);
+        Task<Models.Task> CreateTaskAsync(CreateTaskRequest request, ClaimsPrincipal user);
         Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task, ClaimsPrincipal user);
         Task<bool> DeleteTaskAsync(Guid taskId);
         Task<List<GetTaskResponse>> GetTasksByUserId(Guid userId);

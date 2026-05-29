@@ -5,6 +5,7 @@ using Dapper;
 using System.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
+using System.Data.Common;
 
 namespace LetDoIt.Api.Services;
 
@@ -12,17 +13,59 @@ public class ProjectService(LetDoItContext context) : IProjectService
 {
     private readonly LetDoItContext _context = context;
 
-    public async Task<bool> ChangeProjectAuthorAsync(Guid projectId, Guid newAuthorId, ClaimsPrincipal user)
+    public async Task<bool> ChangeProjectAuthorAsync(Guid projectId, Guid currentAuthorId, Guid newAuthorId, ClaimsPrincipal user)
     {
-        var userId = GetUserId(user);
-        var project = await _context.Projects.FindAsync(projectId);
-        if (project == null || project.UserId != userId)
+        using var connection = _context.Database.GetDbConnection();
+        if (connection.State == ConnectionState.Closed)
+            await connection.OpenAsync();
+
+        // Khởi tạo Transaction bằng Dapper/SQL thuần
+        using (var transaction = connection.BeginTransaction())
         {
-            throw new ArgumentException("Project is not exist or you are not the owner!");
+            try
+            {
+                // 1. Cập nhật bảng projects (Đổi chủ)
+                string updateProjectSql = @"
+                UPDATE ""Projects""
+                SET ""CreatedBy"" = @NewOwnerId 
+                WHERE ""project_id"" = @ProjectId AND ""CreatedBy"" = @CurrentOwnerId;";
+
+                // 2. Hạ quyền ông chủ cũ xuống làm Member trong bảng thành viên
+                string demoteOldOwnerSql = @"
+                UPDATE ""ProjectMembers"" 
+                SET ""Role"" = 'Member' 
+                WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @CurrentOwnerId;";
+
+                // 3. Đôn ông chủ mới lên làm Manager
+                string promoteNewOwnerSql = @"
+                UPDATE ""ProjectMembers"" 
+                SET ""Role"" = 'Manager' 
+                WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @NewOwnerId;";
+
+                // Thực thi tuần tự ""các câu lệnh trong cùng transaction
+                var affectedRows = await connection.ExecuteAsync(updateProjectSql, new { ProjectId = projectId, NewOwnerId = newAuthorId, CurrentOwnerId = currentAuthorId }, transaction);
+
+                if (affectedRows == 0)
+                {
+                    // Nếu không tìm thấy project hoặc currentOwnerId không khớp, hủy kèo
+                    transaction.Rollback();
+                    return false;
+                }
+
+                await connection.ExecuteAsync(demoteOldOwnerSql, new { ProjectId = projectId, CurrentOwnerId = currentAuthorId }, transaction);
+                await connection.ExecuteAsync(promoteNewOwnerSql, new { ProjectId = projectId, NewOwnerId = newAuthorId }, transaction);
+
+                // Thành công tốt đẹp thì Commit xuống DB
+                transaction.Commit();
+                return true;
+            }
+            catch (Exception)
+            {
+                // Có biến cố gì là Rollback ngay, không sợ bị mất đồng bộ dữ liệu
+                transaction.Rollback();
+                throw;
+            }
         }
-        project.UserId = newAuthorId;
-        await _context.SaveChangesAsync();
-        return true;
     }
 
     public async Task<GetProjectRequest> CreateProjectAsync(CreateProjectRequest request, ClaimsPrincipal user)
@@ -57,7 +100,8 @@ public class ProjectService(LetDoItContext context) : IProjectService
             ProjectId = newProject.ProjectId,
             Title = newProject.Title,
             CreatedAt = newProject.CreatedAt,
-            Role = "Manager"
+            Role = "Manager",
+            AuthorName = user.Identity?.Name ?? "Unknown"
         };
     }
 
@@ -91,25 +135,25 @@ public class ProjectService(LetDoItContext context) : IProjectService
         int totalCount = await query.CountAsync();
 
         var projectDtos = await _context.Projects
+            .Include(p => p.User)
             .OrderByDescending(p => p.CreatedAt)
             .Where(p => p.ProjectMembers.Any(pm => pm.UserId == userId))
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(); 
+            .ToListAsync();
 
         var projects = projectDtos.Select(p => new GetProjectRequest
         {
             ProjectId = p.ProjectId,
             Title = p.Title,
             CreatedAt = p.CreatedAt,
-            Role = p.ProjectMembers.FirstOrDefault(pm => pm.UserId == userId)?.Role ?? "Member", 
-            NumberOfMembers = p.ProjectMembers.Count
+            Role = p.ProjectMembers.FirstOrDefault(pm => pm.UserId == userId)?.Role ?? "Member",
+            NumberOfMembers = p.ProjectMembers.Count,
+            AuthorName = p.User?.Username ?? "Unknown"
         }).ToList();
 
         return (projects, totalCount);
     }
-
-
 
     public async Task<bool> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request, ClaimsPrincipal user)
     {
@@ -119,7 +163,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
         {
             throw new ArgumentException("Project is not exist or you are not the owner!");
         }
-        project.Title = request.Name;
+        project.Title = request.Title;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -147,9 +191,10 @@ public class ProjectService(LetDoItContext context) : IProjectService
             " + (formattedSearch != null ?
             "AND p.\"Title\" ILIKE @SearchTerm" : "") + @";
 
-            SELECT p.""project_id"", p.""ProjectName"", p.""created_at"", pm.""Role""
+            SELECT p.""project_id"" AS ProjectId, p.""ProjectName"" AS Title, p.""created_at"" AS CreatedAt, pm.""Role"" AS Role, u.""Username"" AS AuthorName
             FROM ""Projects"" p
             INNER JOIN ""ProjectMembers"" pm ON p.""project_id"" = pm.""ProjectId""
+            LEFT JOIN ""Users"" u ON p.""CreatedBy"" = u.""UserId""
             WHERE pm.""UserId"" = @UserId 
             AND p.""IsDeleted"" = FALSE
             -- Nếu @SearchTerm truyền vào là NULL hoặc rỗng thì bỏ qua, ngược lại thì lọc theo Title
@@ -176,5 +221,67 @@ public class ProjectService(LetDoItContext context) : IProjectService
         var projects = (await multi.ReadAsync<GetProjectRequest>()).ToList();
 
         return (projects, totalCount);
+    }
+
+    public async Task<List<UserMemberDto>> GetMembersByProjectIdAsync(Guid projectId)
+    {
+        string sql = @"
+        SELECT 
+            u.""Username"" AS ""username"",
+            pm.""Role"" AS ""role""
+        FROM ""ProjectMembers"" pm
+        INNER JOIN ""Users"" u ON pm.""UserId"" = u.""UserId""
+        WHERE pm.""ProjectId"" = @ProjectId;
+        ";
+
+        using var connection = _context.Database.GetDbConnection();
+        if (connection.State == ConnectionState.Closed)
+            await connection.OpenAsync();
+
+        var members = await connection.QueryAsync<UserMemberDto>(sql, new { ProjectId = projectId });
+        return members.ToList();
+    }
+
+    public async Task<bool> AddMemberToProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
+    {
+        using var connection = _context.Database.GetDbConnection();
+        if (connection.State == ConnectionState.Closed)
+            await connection.OpenAsync();
+        var ownerId = GetUserId(user);
+        var project = await _context.Projects.FindAsync(projectId);
+        if (project == null || project.UserId != ownerId) // Kiểm tra chủ sở hữu và tồn tại
+        {
+            throw new ArgumentException("Project is not exist or you are not the owner!");
+        }
+        if (_context.ProjectMembers.Any(pm => pm.ProjectId == projectId && pm.UserId == memberId))
+        { // Kiểm tra đã có trong project chưa
+            throw new ArgumentException("Member is already in the project!");
+        }
+        var newMember = new ProjectMember
+        {
+            UserId = memberId,
+            Role = "Member",
+            ProjectId = projectId
+        };
+        _context.ProjectMembers.Add(newMember);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RemoveMemberFromProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
+    {
+        using var connection = _context.Database.GetDbConnection();
+        if (connection.State == ConnectionState.Closed)
+            await connection.OpenAsync();
+        var ownerId = GetUserId(user);
+        var project = await _context.Projects.FindAsync(projectId);
+        if (project == null || project.UserId != ownerId) //Kiểm tra có phải chủ sở hữu và tồn tại không
+        {
+            throw new ArgumentException("Project is not exist or you are not the owner!");
+        }
+        var member = await _context.ProjectMembers.FindAsync(projectId, memberId) ?? throw new ArgumentException("Member is not exist in the project!");
+        _context.ProjectMembers.Remove(member);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

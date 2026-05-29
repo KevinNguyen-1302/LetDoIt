@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { Divider, Flex } from "antd";
+import { Flex } from "antd";
 import { Pagination } from "antd";
 
 import CreateProjectModal from "../components/CreateProject";
 import { getProjectsByUserId, type Project } from "../services/projectService";
 import { getCurrentUserId, isAuthenticated } from "../services/authService";
 import { toast } from "react-toastify";
-import TrashBin from "../components/TrashBin";
 import ProjectContainer from "../components/ProjectContainer";
 
 const Home = () => {
@@ -135,9 +134,12 @@ const Home = () => {
             {projects.map((project) => (
               <ProjectContainer
                 key={project.projectId}
+                projectId={project.projectId}
                 title={project.title}
                 createdAt={project.createdAt}
                 numberOfMembers={project.numberOfMembers || 1}
+                authorName={project.authorName}
+                onUpdate={fetchProjects}
               />
             ))}
           </div>

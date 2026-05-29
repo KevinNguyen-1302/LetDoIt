@@ -3,6 +3,7 @@ using System;
 using LetDoIt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LetDoIt.Api.Migrations
 {
     [DbContext(typeof(LetDoItContext))]
-    partial class LetDoItContextModelSnapshot : ModelSnapshot
+    [Migration("20260529015526_AddAssigneeIdAttributetoTaskModel")]
+    partial class AddAssigneeIdAttributetoTaskModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -270,8 +273,6 @@ namespace LetDoIt.Api.Migrations
 
                     b.HasKey("TaskId");
 
-                    b.HasIndex("AssigneeId");
-
                     b.HasIndex("ColumnId");
 
                     b.HasIndex("CreatedBy");
@@ -522,10 +523,6 @@ namespace LetDoIt.Api.Migrations
 
             modelBuilder.Entity("LetDoIt.Api.Models.Task", b =>
                 {
-                    b.HasOne("LetDoIt.Api.Models.Users", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId");
-
                     b.HasOne("LetsDoIt.Models.Column", "Column")
                         .WithMany("Tasks")
                         .HasForeignKey("ColumnId");
@@ -539,8 +536,6 @@ namespace LetDoIt.Api.Migrations
                     b.HasOne("LetDoIt.Api.Models.Project", null)
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId");
-
-                    b.Navigation("Assignee");
 
                     b.Navigation("Column");
 
