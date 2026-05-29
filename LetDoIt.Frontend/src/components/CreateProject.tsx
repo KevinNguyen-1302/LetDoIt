@@ -11,7 +11,6 @@ interface CreateProjectModalProps {
 const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
     title: "",
   });

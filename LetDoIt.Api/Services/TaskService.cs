@@ -36,7 +36,7 @@ public class TaskService : ITaskService
         return true;
     }
 
-    private static Priority CalculatePriority(DateTime dueDate)
+    private Priority CalculatePriority(DateTime dueDate)
     {
         // ✅ Đảm bảo dueDate là UTC trước khi so sánh
         if (dueDate.Kind != DateTimeKind.Utc)
@@ -82,26 +82,45 @@ public class TaskService : ITaskService
         }
 
         // Assign user ID to the task
-        var newTask = new Models.Task
+        var newTask = new CreateTaskRequest
         {
             Title = request.Title,
             Description = request.Description,
             DueDate = dueDate,
             IsCompleted = request.IsCompleted,
-            Priority = request.Priority != 0 ? (Priority)request.Priority : CalculatePriority(dueDate),
-            Visibility = (Visibility)request.Visibility,
+            Priority = request.Priority,
+            Visibility = request.Visibility,
             CreatedBy = userId,
-            AssigneeId = request.AssigneeId,
-            ColumnId = request.ColumnId
+            //ColumnId = columnId
         };
         if (dueDate < DateTime.UtcNow)
         {
             throw new ArgumentException("Due date must be in the future!");
         }
-        _context.Tasks.Add(newTask);
+        _context.Tasks.Add(new Models.Task
+        {
+            TaskId = Guid.NewGuid(),
+            Title = newTask.Title,
+            Description = newTask.Description,
+            DueDate = newTask.DueDate,
+            IsCompleted = newTask.IsCompleted,
+            Priority = (Priority)newTask.Priority,
+            Visibility = (Visibility)newTask.Visibility,
+            CreatedBy = newTask.CreatedBy,
+            ColumnId = null
+        });
         await _context.SaveChangesAsync();
 
-        return newTask;
+        return new Models.Task
+        {
+            Title = newTask.Title,
+            Description = newTask.Description,
+            DueDate = newTask.DueDate,
+            IsCompleted = newTask.IsCompleted,
+            Priority = (Priority)newTask.Priority,
+            Visibility = (Visibility)newTask.Visibility,
+            CreatedBy = newTask.CreatedBy
+        };
     }
 
     public async Task<bool> DeleteTaskAsync(Guid taskId)
@@ -165,7 +184,7 @@ public class TaskService : ITaskService
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
         {
-            throw new UnauthorizedAccessException("Token invalid!");
+            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
 
         var existingTask = await _context.Tasks.FindAsync(taskId);

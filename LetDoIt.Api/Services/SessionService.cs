@@ -6,13 +6,10 @@ using LetDoIt.Api.DTOs;
 
 namespace LetDoIt.Api.Services
 {
-    public class SessionService : ISessionService
+    public class SessionService(LetDoItContext context) : ISessionService
     {
-        private readonly LetDoItContext _context;
-        public SessionService(LetDoItContext context)
-        {
-            _context = context;
-        }
+        private readonly LetDoItContext _context = context;
+
         public async Task<Session> SaveCompletedSessionAsync(CreateSessionRequestDto request, ClaimsPrincipal user)
         {
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

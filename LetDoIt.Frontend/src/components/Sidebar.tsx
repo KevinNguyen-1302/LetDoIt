@@ -26,7 +26,7 @@ const Sidebar = () => {
       <aside
         className={clsx(
           "border-r border-gray-100 flex flex-col p-3 md:p-6 transition-all duration-500 sticky top-20 h-screen",
-          isExpanded ? " md:w-64 lg:w-64" : "w-20 md:w-20 lg:w-30",
+          isExpanded ? " md:w-64 lg:w-64" : "w-20 md:w-30 lg:w-30",
         )}
       >
         <button
