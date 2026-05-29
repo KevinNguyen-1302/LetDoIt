@@ -151,6 +151,24 @@ public class ColumnService : IColumnService
         return columns;
     }
 
+    public async Task<List<Column>> GetColumnsByProjectIdAsync(Guid projectId, ClaimsPrincipal user)
+    {
+        var userId = GetUserId(user);
+
+        // Kiểm tra user có quyền truy cập project không
+        if (!await UserCanAccessProjectAsync(userId, projectId))
+        {
+            return new List<Column>();
+        }
+
+        var columns = await context.Columns
+            .Where(c => c.ProjectId == projectId)
+            .OrderBy(c => c.Position)
+            .ToListAsync();
+
+        return columns;
+    }
+
     private async Task<bool> UserCanAccessProjectAsync(Guid userId, Guid projectId)
     {
         // Kiểm tra user có phải là owner của project

@@ -6,6 +6,8 @@ export interface CreateTaskRequest {
   dueDate: string; // ISO string format
   categoryId?: string | null; // Can be null if no category selected
   priority: number; // 1=Low, 2=Medium, 3=High, 4=Urgent
+  columnId?: string;
+  visibility?: number;
 }
 
 export interface TaskResponse {
@@ -31,20 +33,24 @@ export interface CategoryResponse {
   iconName: string;
 }
 
-export const createTask = async (taskData: CreateTaskRequest) => {
-  return await api.post('/task/CreateTask', taskData);
+export const createTask = async (taskData: CreateTaskRequest): Promise<TaskResponse> => {
+  const response = await api.post<any>('/task/CreateTask', taskData);
+  return response.data?.data;
 };
 
-export const getMyCategories = async () => {
-  return await api.get<CategoryResponse[]>('/category/GetCategories');
+export const getMyCategories = async (): Promise<CategoryResponse[]> => {
+  const response = await api.get<any>('/category/GetCategories');
+  return response.data?.data || [];
 };
 
-export const getMyTasks = async () => {
-  return await api.get<TaskResponse[]>('/task/GetMyTask');
+export const getMyTasks = async (): Promise<TaskResponse[]> => {
+  const response = await api.get<any>('/task/GetMyTask');
+  return response.data?.data || [];
 };
 
-export const getTasksByUserId = async (userId: string) => {
-  return await api.get<TaskResponse[]>(`/task/GetTasksByUserId?userId=${userId}`);
+export const getTasksByUserId = async (userId: string): Promise<TaskResponse[]> => {
+  const response = await api.get<any>(`/task/GetTasksByUserId?userId=${userId}`);
+  return response.data?.data || [];
 };
 
 export interface UpdateTaskRequest {
@@ -57,28 +63,39 @@ export interface UpdateTaskRequest {
   visibility?: number;
 }
 
-export const updateTask = async (taskId: string, taskData: UpdateTaskRequest) => {
-  return await api.put(`/task/UpdateTask/${taskId}`, taskData);
-}
+export const updateTask = async (taskId: string, taskData: UpdateTaskRequest): Promise<boolean> => {
+  const response = await api.put<any>(`/task/UpdateTask/${taskId}`, taskData);
+  return response.data?.data || false;
+};
 
-export const deleteTask = async (taskId: string) => {
-  return await api.delete(`/task/DeleteTask/${taskId}`);
-}
+export const deleteTask = async (taskId: string): Promise<boolean> => {
+  const response = await api.delete<any>(`/task/DeleteTask/${taskId}`);
+  return response.data?.data || false;
+};
 
-export const moveTask = async (taskId: string, newColumnId: string) => {
-  return await api.put(`/task/MoveTask/${taskId}`, {
+export const moveTask = async (taskId: string, newColumnId: string): Promise<boolean> => {
+  const response = await api.put<any>(`/task/MoveTask/${taskId}`, {
     newColumnId: newColumnId
   });
+  return response.data?.data || false;
+};
+
+export const getTasksByProject = async (projectId: string): Promise<TaskResponse[]> => {
+  const response = await api.get<any>(`/task/GetTasksByProject/${projectId}`);
+  return response.data?.data || [];
+};
+
+export const createCategory = async (category: CategoryResponse): Promise<CategoryResponse> => {
+  const response = await api.post<any>('/category/CreateCategory', category);
+  return response.data?.data;
 }
 
-export const createCategory = async (category: CategoryResponse) => {
-  return await api.post('/category/CreateCategory', category);
+export const deleteCategory = async (categoryId: string): Promise<boolean> => {
+  const response = await api.delete<any>(`/category/DeleteCategory/${categoryId}`);
+  return response.data?.data || false;
 }
 
-export const deleteCategory = async (categoryId: string) => {
-  return await api.delete(`/category/DeleteCategory/${categoryId}`);
-}
-
-export const updateCategory = async (category: CategoryResponse) => {
-  return await api.put(`/category/UpdateCategory/${category.categoryId}`, category);
+export const updateCategory = async (category: CategoryResponse): Promise<boolean> => {
+  const response = await api.put<any>(`/category/UpdateCategory/${category.categoryId}`, category);
+  return response.data?.data || false;
 }

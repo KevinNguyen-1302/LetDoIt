@@ -15,23 +15,32 @@ export interface ColumnResponse {
   userId: string;
 }
 
-export const getColumns = async () => {
-  return await api.get<ColumnResponse[]>(`/Column/GetColumns`);
+export const getColumns = async (): Promise<ColumnResponse[]> => {
+  const response = await api.get<any>(`/Column/GetColumns`);
+  return response.data?.data || [];
 };
 
-
-export const deleteColumn = async (columnId: string) => {
-  return await api.delete<boolean>(`/Column/DeleteColumn/${columnId}`);
+export const deleteColumn = async (columnId: string): Promise<boolean> => {
+  const response = await api.delete<any>(`/Column/DeleteColumn/${columnId}`);
+  return response.data?.data || false;
 };
 
-export const updateColumn = async (columnId: string, title: string) => {
-  return await api.put<boolean>(`/Column/UpdateColumn/${columnId}`, { title });
+export const updateColumn = async (columnId: string, title: string): Promise<boolean> => {
+  const response = await api.put<any>(`/Column/UpdateColumn/${columnId}`, { title });
+  return response.data?.data || false;
 };
 
-export const createColumn = async (title: string, position: number = 0) => {
-  return await api.post<ColumnResponse>(`/Column/CreateColumn`, { title, position });
+export const createColumn = async (title: string, position: number = 0, projectId?: string): Promise<ColumnResponse> => {
+  const response = await api.post<any>(`/Column/CreateColumn`, { title, position, projectId });
+  return response.data?.data;
 };
 
-export const changeColumnPosition = async (columnId: string, newPosition: number) => {
-  return await api.put<boolean>(`/Column/ChangeColumnPosition?columnId=${columnId}&newPosition=${newPosition}`);
+export const changeColumnPosition = async (columnId: string, newPosition: number): Promise<boolean> => {
+  const response = await api.put<any>(`/Column/ChangeColumnPosition?columnId=${columnId}&newPosition=${newPosition}`);
+  return response.data?.data || false;
+};
+
+export const getColumnsByProject = async (projectId: string): Promise<ColumnResponse[]> => {
+  const response = await api.get<any>(`/Column/GetColumnsByProject/${projectId}`);
+  return response.data?.data || [];
 };

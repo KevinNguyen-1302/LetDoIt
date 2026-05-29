@@ -9,10 +9,6 @@ interface DeleteCheckProps {
   onCancel: () => void;
 }
 
-import {
-    deleteProject,
-}from "../services/projectService";
-
 const DeleteCheck: React.FC<DeleteCheckProps> = ({
   projectTitle,
   isOpen,
