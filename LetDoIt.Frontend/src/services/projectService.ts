@@ -86,7 +86,7 @@ export const getProjectMembers = async (projectId: string) => {
   const response = await api.get<any>(
     `/project/GetProjectMembers/${projectId}`,
   );
-  return response.data?.data;
+  return response.data?.data?.data || response.data?.data || [];
 };
 
 export const addMemberToProject = async (

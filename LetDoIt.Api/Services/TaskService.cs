@@ -9,18 +9,23 @@ using System.Security.Claims;
 
 namespace LetDoIt.Api.Services;
 
-public class TaskService : ITaskService
+public class TaskService(LetDoItContext context) : ITaskService
 {
-    private readonly LetDoItContext _context;
-    public TaskService(LetDoItContext context)
-    {
-        _context = context;
-    }
+    private readonly LetDoItContext _context = context;
+    private static readonly string[] TaskWriteRoles = ["Manager"];
 
-    public async Task<bool> ChangePriority(Guid taskId, Priority? newPriority = null)
+    public async Task<bool> ChangePriority(Guid taskId, ClaimsPrincipal user, Priority? newPriority = null)
     {
-        var task = await _context.Tasks.FindAsync(taskId);
+        var userId = GetUserId(user);
+        var task = await _context.Tasks
+            .Include(t => t.Column)
+            .FirstOrDefaultAsync(t => t.TaskId == taskId);
         if (task == null) return false;
+
+        if (!await UserCanUpdateTaskAsync(userId, task))
+        {
+            return false;
+        }
 
         // Logic: Nếu user truyền priority vào thì dùng, nếu null thì tự tính
         if (newPriority.HasValue)
@@ -57,13 +62,7 @@ public class TaskService : ITaskService
 
     public async Task<Models.Task> CreateTaskAsync(CreateTaskRequest request, ClaimsPrincipal user)
     {
-        // Extract user ID from claims
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
-        }
+        var userId = GetUserId(user);
 
         var dueDate = request.DueDate;
         if (dueDate.Kind == DateTimeKind.Unspecified)
@@ -80,6 +79,16 @@ public class TaskService : ITaskService
             throw new ArgumentException("Due date must be in the future!");
         }
 
+        if (request.ColumnId != Guid.Empty)
+        {
+            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == request.ColumnId);
+
+            if (column == null || !await UserCanCreateTaskAsync(userId, column.ProjectId))
+            {
+                throw new UnauthorizedAccessException("Bạn không có quyền thêm task vào project này.");
+            }
+        }
+
         var taskToInsert = new Models.Task
         {
             TaskId = Guid.NewGuid(),
@@ -90,7 +99,8 @@ public class TaskService : ITaskService
             Priority = (Priority)request.Priority,
             Visibility = (Visibility)request.Visibility,
             CreatedBy = userId,
-            ColumnId = request.ColumnId != Guid.Empty ? request.ColumnId : null
+            ColumnId = request.ColumnId != Guid.Empty ? request.ColumnId : null,
+            AssigneeId = request.AssigneeId != Guid.Empty ? request.AssigneeId : null
         };
 
         _context.Tasks.Add(taskToInsert);
@@ -99,13 +109,20 @@ public class TaskService : ITaskService
         return taskToInsert;
     }
 
-    public async Task<bool> DeleteTaskAsync(Guid taskId)
+    public async Task<bool> DeleteTaskAsync(Guid taskId, ClaimsPrincipal user)
     {
-        var existingTask = await GetTaskByIdAsync(taskId);
-
-
+        var userId = GetUserId(user);
+        var existingTask = await _context.Tasks
+            .Include(t => t.Column)
+            .FirstOrDefaultAsync(t => t.TaskId == taskId);
         if (existingTask == null) return false;
-        _context.Tasks.Remove(new Models.Task { TaskId = taskId });
+
+        if (!await UserCanDeleteTaskAsync(userId, existingTask))
+        {
+            return false;
+        }
+
+        _context.Tasks.Remove(existingTask);
         try
         {
             await _context.SaveChangesAsync();
@@ -131,6 +148,9 @@ public class TaskService : ITaskService
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
                 Visibility = (int)t.Visibility,
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
             })
             .FirstOrDefaultAsync();
         return result;
@@ -149,22 +169,27 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = (int)t.Visibility
+                Visibility = (int)t.Visibility,
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
             })
             .ToListAsync();
     }
 
     public async Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task, ClaimsPrincipal user)
     {
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetUserId(user);
 
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        var existingTask = await _context.Tasks
+            .Include(t => t.Column)
+            .FirstOrDefaultAsync(t => t.TaskId == taskId);
+        if (existingTask == null)
         {
-            throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
+            return false;
         }
 
-        var existingTask = await _context.Tasks.FindAsync(taskId);
-        if (existingTask == null)
+        if (!await UserCanUpdateTaskAsync(userId, existingTask))
         {
             return false;
         }
@@ -190,6 +215,7 @@ public class TaskService : ITaskService
         existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
         existingTask.Priority = task.Priority != null ? (Priority)task.Priority : existingTask.Priority;
         existingTask.Visibility = task.Visibility != null ? (Visibility)task.Visibility : existingTask.Visibility;
+        existingTask.AssigneeId = task.AssigneeId != null ? task.AssigneeId : existingTask.AssigneeId;
         try
         {
             await _context.SaveChangesAsync();
@@ -204,11 +230,6 @@ public class TaskService : ITaskService
             }
             return false;
         }
-    }
-
-    public Task<List<GetTaskResponse>> GetTasksByCategoryIdAsync(Guid categoryId)
-    {
-        throw new NotImplementedException();
     }
 
 
@@ -234,7 +255,10 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = (int)t.Visibility
+                Visibility = (int)t.Visibility,
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
             })
             .OrderBy(t => t.DueDate) // Sắp xếp theo DueDate tăng dần
             .ToListAsync();
@@ -244,18 +268,25 @@ public class TaskService : ITaskService
 
     public async Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user)
     {
-        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = GetUserId(user);
 
-        if (currentUserId == null || !Guid.TryParse(currentUserId, out var userId))
-        {
-            throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
-        }
-        var existingTask = await _context.Tasks.FindAsync(taskId);
+        var existingTask = await _context.Tasks
+            .Include(t => t.Column)
+            .FirstOrDefaultAsync(t => t.TaskId == taskId);
         if (existingTask == null) return false;
 
-        existingTask.ColumnId = newColumnId;
+        var targetColumn = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == newColumnId);
+        if (targetColumn == null)
+        {
+            return false;
+        }
 
-        var targetColumn = await _context.Columns.FindAsync(newColumnId);
+        if (!await UserCanMoveTaskAsync(userId, existingTask, targetColumn.ProjectId))
+        {
+            return false;
+        }
+
+        existingTask.ColumnId = newColumnId;
 
         try
         {
@@ -289,7 +320,10 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = (int)t.Visibility
+                Visibility = (int)t.Visibility,
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
             })
             .ToListAsync();
     }
@@ -302,11 +336,20 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
         }
 
-        // Lấy tất cả tasks thuộc các column của project, và user có quyền (creator/assignee)
+        // Kiểm tra xem user có phải là member của project không
+        var isMember = await _context.ProjectMembers
+            .AnyAsync(pm => pm.ProjectId == projectId && pm.UserId == userId);
+
+        if (!isMember)
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền truy cập project này.");
+        }
+
+        // Lấy tất cả tasks thuộc các column của project mà user có quyền xem (Public, Creator, hoặc Assignee)
         var tasks = await _context.Tasks
             .Where(t => t.Column != null
                 && t.Column.ProjectId == projectId
-                && (t.CreatedBy == userId || t.AssigneeId == userId))
+                && (t.Visibility == Visibility.Public || t.CreatedBy == userId || t.AssigneeId == userId))
             .Select(t => new GetTaskResponse
             {
                 TaskId = t.TaskId,
@@ -316,7 +359,10 @@ public class TaskService : ITaskService
                 DueDate = t.DueDate,
                 IsCompleted = t.IsCompleted,
                 Priority = (int)t.Priority,
-                Visibility = (int)t.Visibility
+                Visibility = (int)t.Visibility,
+                AssigneeId = t.AssigneeId,
+                AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
             })
             .OrderBy(t => t.DueDate)
             .ToListAsync();
@@ -337,6 +383,53 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
         return userId;
+    }
+
+    private Task<bool> UserCanCreateTaskAsync(Guid userId, Guid projectId)
+    {
+        return UserHasProjectRoleAsync(userId, projectId, TaskWriteRoles);
+    }
+
+    private async Task<bool> UserCanUpdateTaskAsync(Guid userId, Models.Task task)
+    {
+        if (task.ColumnId == null || task.Column == null)
+        {
+            return task.CreatedBy == userId;
+        }
+
+        return await UserHasProjectRoleAsync(userId, task.Column.ProjectId, TaskWriteRoles);
+    }
+
+    private async Task<bool> UserCanDeleteTaskAsync(Guid userId, Models.Task task)
+    {
+        if (task.ColumnId == null || task.Column == null)
+        {
+            return task.CreatedBy == userId;
+        }
+
+        return await UserHasProjectRoleAsync(userId, task.Column.ProjectId, TaskWriteRoles);
+    }
+
+    private async Task<bool> UserCanMoveTaskAsync(Guid userId, Models.Task task, Guid targetProjectId)
+    {
+        var canAccessCurrentProject = task.ColumnId == null || task.Column == null
+            ? task.CreatedBy == userId
+            : await UserHasProjectRoleAsync(userId, task.Column.ProjectId, TaskWriteRoles);
+
+        if (!canAccessCurrentProject)
+        {
+            return false;
+        }
+
+        return await UserHasProjectRoleAsync(userId, targetProjectId, TaskWriteRoles);
+    }
+
+    private async Task<bool> UserHasProjectRoleAsync(Guid userId, Guid projectId, params string[] allowedRoles)
+    {
+        return await _context.ProjectMembers.AnyAsync(pm =>
+            pm.ProjectId == projectId
+            && pm.UserId == userId
+            && allowedRoles.Contains(pm.Role));
     }
 
 

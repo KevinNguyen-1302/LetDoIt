@@ -131,3 +131,11 @@ D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\refint\LetDoIt.Api.dll
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\LetDoIt.Api.pdb
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\LetDoIt.Api.genruntimeconfig.cache
 D:\Porfolio\LetDoIt\LetDoIt\LetDoIt.Api\obj\Debug\net10.0\ref\LetDoIt.Api.dll
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\appsettings.Development.json
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\appsettings.json
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.staticwebassets.endpoints.json
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.exe
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.deps.json
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.runtimeconfig.json
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.dll
+D:\Porfolio\LetDoIt\LetDoIt\.codex-build\LetDoIt.Api.pdb

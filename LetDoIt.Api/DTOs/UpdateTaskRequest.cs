@@ -11,5 +11,7 @@ namespace LetDoIt.Api.DTOs
         public bool? IsCompleted { get; set; }
         public int? Priority { get; set; }
         public int? Visibility { get; set; } = 2; // Default to Private
+        public Guid? AssigneeId { get; set; }
+
     }
 }

@@ -57,7 +57,7 @@ namespace LetDoIt.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteTask(Guid id)
         {
-            var deleted = await _service.DeleteTaskAsync(id);
+            var deleted = await _service.DeleteTaskAsync(id, User);
             if (!deleted) return NotFound("Khong the tim thay task voi Id chi dinh");
             return NoContent();
         }
@@ -67,7 +67,7 @@ namespace LetDoIt.Api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> ChangePriority(Guid id, [FromBody] ChangePriorityRequest? request)
         {
-            var changed = await _service.ChangePriority(id, request?.Priority);
+            var changed = await _service.ChangePriority(id, User, request?.Priority);
             if (!changed) return NotFound("Khong the tim thay task voi Id chi dinh");
             return NoContent();
         }

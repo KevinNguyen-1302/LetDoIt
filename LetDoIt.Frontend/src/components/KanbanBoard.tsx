@@ -440,6 +440,7 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
         columnId={targetColumnId}
+        projectId={projectId}
       />
     </div>
   );

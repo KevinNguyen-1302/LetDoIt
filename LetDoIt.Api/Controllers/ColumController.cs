@@ -40,7 +40,8 @@ namespace LetDoIt.Api.Controllers
         public async Task<IActionResult> CreateColumn(CreateColumnRequest request)
         {
             var column = await _service.CreateColumnAsync(request, User);
-            if (column is null) return BadRequest("Could not create column.");
+            if (column is null)
+                return BadRequest("Could not create column.");
             return CreatedAtAction(nameof(GetColumns), new { projectId = column.ProjectId }, column);
         }
 
