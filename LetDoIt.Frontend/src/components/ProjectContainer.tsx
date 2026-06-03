@@ -17,6 +17,7 @@ interface ProjectContainerProps {
   numberOfMembers: number;
   authorName?: string;
   onUpdate?: () => void;
+  onOpen?: (projectId: string) => void;
 }
 
 const ProjectContainer: React.FC<ProjectContainerProps> = ({
@@ -26,6 +27,7 @@ const ProjectContainer: React.FC<ProjectContainerProps> = ({
   numberOfMembers,
   authorName,
   onUpdate,
+  onOpen,
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
@@ -69,7 +71,8 @@ const ProjectContainer: React.FC<ProjectContainerProps> = ({
             await changeProjectAuthor(projectId, selectedMember.userId);
             isUpdated = true;
           } else {
-            const userDto = await getUserByUsername(editAuthor.trim());
+            const users = await getUserByUsername(editAuthor.trim());
+            const userDto = Array.isArray(users) ? users[0] : users;
             if (userDto && userDto.userId) {
               await changeProjectAuthor(projectId, userDto.userId);
               isUpdated = true;
@@ -137,6 +140,11 @@ const ProjectContainer: React.FC<ProjectContainerProps> = ({
             ? "scale-105 z-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] min-h-50"
             : "hover:-translate-y-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] min-h-40"
         }`}
+        onClick={() => {
+          if (!editMode && onOpen) {
+            onOpen(projectId);
+          }
+        }}
       >
         {/* Top Header */}
         <div className="flex justify-between items-start mb-4">

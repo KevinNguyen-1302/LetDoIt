@@ -13,4 +13,5 @@ public interface IColumnService
     public Task<bool> DeleteColumnAsync(Guid columnId, ClaimsPrincipal user);
     public Task<bool> ChangeColumnPositionAsync(Guid columnId, int newPosition, ClaimsPrincipal user);
     public Task<List<Column>> GetColumnsByUserIdAsync(Guid userId);
+    public Task<List<Column>> GetColumnsByProjectIdAsync(Guid projectId, ClaimsPrincipal user);
 }

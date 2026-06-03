@@ -1,4 +1,4 @@
-﻿using LetDoIt.Api.DTOs;
+using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
 using System.Security.Claims;
 namespace LetDoIt.Api.Services
@@ -16,5 +16,6 @@ namespace LetDoIt.Api.Services
         Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user);
         Task<List<GetTaskResponse>> GetTasksByDueDateAsync(DateTime dueDate, ClaimsPrincipal user);
         Task<List<GetTaskResponse>> GetTasksByVisibilityAsync(string visibility);
+        Task<List<GetTaskResponse>> GetTasksByProjectIdAsync(Guid projectId, ClaimsPrincipal user);
     }
 }

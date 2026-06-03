@@ -1,38 +1,38 @@
-import api from './api';
+import api from "./api";
 import { jwtDecode } from "jwt-decode";
 
 export const register = async (userData: any) => {
-  return await api.post('/user/Register', userData);
+  return await api.post("/user/Register", userData);
 };
 
 export const login = async (credentials: any) => {
-  return await api.post('/user/Login', credentials);
+  return await api.post("/user/Login", credentials);
 };
 
 export const refreshTokenAsync = async () => {
   try {
-    const refreshToken = localStorage.getItem('refreshToken');
-    const userId = localStorage.getItem('userId');
-    
+    const refreshToken = localStorage.getItem("refreshToken");
+    const userId = localStorage.getItem("userId");
+
     if (!refreshToken || !userId) {
       return false;
     }
 
-    const response = await api.post('/user/RefreshToken', {
+    const response = await api.post("/user/RefreshToken", {
       userId,
-      refreshToken
+      refreshToken,
     });
 
     if (response.data.accessToken) {
-      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem("token", response.data.accessToken);
       if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        localStorage.setItem("refreshToken", response.data.refreshToken);
       }
       return true;
     }
     return false;
   } catch (error) {
-    console.error('Refresh token failed:', error);
+    console.error("Refresh token failed:", error);
     return false;
   }
 };
@@ -44,7 +44,7 @@ export const isAuthenticated = () => {
   try {
     const decoded: any = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-    
+
     return decoded.exp > currentTime;
   } catch (error) {
     return false;
@@ -59,7 +59,7 @@ export const isTokenExpiring = () => {
     const decoded: any = jwtDecode(token);
     const currentTime = Date.now() / 1000;
     const expiringTime = decoded.exp - currentTime;
-    
+
     // Token expires trong 5 phút
     return expiringTime < 5 * 60;
   } catch (error) {
@@ -68,16 +68,20 @@ export const isTokenExpiring = () => {
 };
 
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('userId');
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("userId");
 };
 
 export const getCurrentUserId = () => {
-  return localStorage.getItem('userId');
+  return localStorage.getItem("userId");
 };
 
 export const getUserByUsername = async (username: string) => {
-  const response = await api.get(`/user/GetByUsername/${username}`);
+  const response = await api.get(`/user/GetByUsername/${username}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
   return response.data;
 };

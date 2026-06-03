@@ -39,6 +39,7 @@ export const getProjectsByUserId = async (
   const totalCount = responseData.totalCount || responseData.TotalCount || 0;
 
   console.log("✅ Extracted projects:", { count: data.length, totalCount }); // Debug
+  console.log("Member of project:", data[0]?.MemberCount);
   return { projects: data, totalCount };
 };
 
@@ -60,8 +61,8 @@ export const changeProjectAuthor = async (
 ) => {
   const response = await api.put<any>(
     `/Project/ChangeProjectAuthor/${projectId}`,
-    null,
-    { params: { newAuthorId } },
+    newAuthorId,
+    { headers: { "Content-Type": "application/json" } },
   );
   return response.data?.data;
 };
@@ -83,7 +84,7 @@ export const getProjectsByUserIdWithDapper = async (
 
 export const getProjectMembers = async (projectId: string) => {
   const response = await api.get<any>(
-    `/Project/GetProjectMembers/${projectId}`,
+    `/project/GetProjectMembers/${projectId}`,
   );
   return response.data?.data;
 };
@@ -93,7 +94,7 @@ export const addMemberToProject = async (
   memberId: string,
 ) => {
   const response = await api.post<any>(
-    `/Project/AddMemberToProject/${projectId}/${memberId}`,
+    `/Project/AddMemberToProject/${projectId}/members/${memberId}`,
   );
   return response.data?.data;
 };

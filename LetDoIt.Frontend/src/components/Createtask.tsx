@@ -6,6 +6,7 @@ import { createTask, type CreateTaskRequest } from "../services/taskService";
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  columnId?: string;
 }
 
 const PRIORITY_OPTIONS = [
@@ -15,7 +16,7 @@ const PRIORITY_OPTIONS = [
   { value: 4, label: "Urgent" },
 ];
 
-const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
+const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -86,6 +87,7 @@ const CreateTaskModal = ({ isOpen, onClose }: CreateTaskModalProps) => {
         description: formData.description,
         dueDate: dueDateTime,
         priority: parseInt(formData.priority),
+        columnId,
       };
       if (dueDateObj.getTime() < utcTimestampMs) {
       toast.error("Please choose a time in the future!");

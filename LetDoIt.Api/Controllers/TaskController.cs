@@ -80,6 +80,15 @@ namespace LetDoIt.Api.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpGet("{projectId}")]
+        public async Task<ActionResult<List<GetTaskResponse>>> GetTasksByProject(Guid projectId)
+        {
+            var tasks = await _service.GetTasksByProjectIdAsync(projectId, User);
+            if (tasks is null) return NotFound("Cannot find the tasks!");
+            return Ok(tasks);
+        }
+
+        [Authorize(Roles = "User")]
         [HttpPut("{id}")]
         public async Task<ActionResult> MoveTask(Guid id, [FromBody] MoveTaskRequest request)
         {

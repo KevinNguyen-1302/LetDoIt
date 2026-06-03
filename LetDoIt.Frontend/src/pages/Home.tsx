@@ -140,7 +140,7 @@ const Home = () => {
                 numberOfMembers={project.numberOfMembers || 1}
                 authorName={project.authorName}
                 onUpdate={fetchProjects}
-
+                onOpen={(id) => navigate(`/project/${id}`)}
               />
             ))}
           </div>

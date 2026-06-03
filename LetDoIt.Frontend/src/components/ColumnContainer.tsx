@@ -5,16 +5,20 @@ import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
 import TaskCard from "./TaskCard";
 
+import { Plus } from "lucide-react";
+
 interface Props {
   column: Column;
   updateColumnTitle: (columnId: string, newTitle: string) => void;
   tasks: TaskResponse[];
   columns: Column[];
   isOverTrash?: boolean;
+  onAddTask: (columnId: string) => void;
 }
 
 const ColumnContainer = (props: Props) => {
-  const { column, updateColumnTitle, tasks, columns, isOverTrash } = props;
+  const { column, updateColumnTitle, tasks, columns, isOverTrash, onAddTask } =
+    props;
   const [editMode, setEditMode] = useState(false);
   const [inputTitle, setInputTitle] = useState(column.title);
 
@@ -62,7 +66,7 @@ const ColumnContainer = (props: Props) => {
     <div
       ref={setNodeRef}
       style={style}
-      className="h-100 bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
+      className="h-full bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
     >
       <div
         {...attributes}
@@ -107,10 +111,23 @@ const ColumnContainer = (props: Props) => {
               />
             ))
           ) : (
-            <div className="text-md text-gray-400 text-center py-4">No tasks yet</div>
+            <div className="text-md text-gray-400 text-center py-4">
+              No tasks yet
+            </div>
           )}
         </div>
       </SortableContext>
+      {/* Add Task Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddTask(column.columnId);
+        }}
+        className="mx-3 mb-3 p-2 border-2 border-black rounded-lg bg-[#E8FF46] hover:bg-yellow-200 flex items-center justify-center gap-2 font-bold cursor-pointer transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] shrink-0 text-black text-sm"
+      >
+        <Plus size={16} />
+        <span>Add Task</span>
+      </button>
     </div>
   );
 };

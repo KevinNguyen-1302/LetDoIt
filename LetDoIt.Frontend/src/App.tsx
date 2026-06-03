@@ -4,6 +4,7 @@ import Register from  './pages/Register'
 import Analytic from  './pages/Analytics';
 import Focus from     './pages/Focus';
 import Calendar from  './pages/Calendar';
+import KanbanPage from './pages/KanbanPage';
 import Layout from './components/Layout';
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { isAuthenticated, isTokenExpiring, refreshTokenAsync, logout } from './services/authService';
@@ -56,7 +57,8 @@ function App() {
       
       {/* Protected routes with Layout */}
       <Route element={isAuth ? <Layout /> : <Navigate to="/login" />}>
-        <Route path='/home' element={<Home />} />
+        <Route path='/home/' element={<Home />} />
+        <Route path='/project/:projectId' element={<KanbanPage />} />
         <Route path='/calendar' element={<Calendar />} />
         <Route path='/focus' element={<Focus />} />
         <Route path='/analytics' element={<Analytic />} />

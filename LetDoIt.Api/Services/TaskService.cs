@@ -65,7 +65,6 @@ public class TaskService : ITaskService
             throw new UnauthorizedAccessException("Token không chứa UserId hợp lệ!");
         }
 
-
         var dueDate = request.DueDate;
         if (dueDate.Kind == DateTimeKind.Unspecified)
         {
@@ -81,46 +80,23 @@ public class TaskService : ITaskService
             throw new ArgumentException("Due date must be in the future!");
         }
 
-        // Assign user ID to the task
-        var newTask = new CreateTaskRequest
+        var taskToInsert = new Models.Task
         {
+            TaskId = Guid.NewGuid(),
             Title = request.Title,
             Description = request.Description,
             DueDate = dueDate,
             IsCompleted = request.IsCompleted,
-            Priority = request.Priority,
-            Visibility = request.Visibility,
+            Priority = (Priority)request.Priority,
+            Visibility = (Visibility)request.Visibility,
             CreatedBy = userId,
-            //ColumnId = columnId
+            ColumnId = request.ColumnId != Guid.Empty ? request.ColumnId : null
         };
-        if (dueDate < DateTime.UtcNow)
-        {
-            throw new ArgumentException("Due date must be in the future!");
-        }
-        _context.Tasks.Add(new Models.Task
-        {
-            TaskId = Guid.NewGuid(),
-            Title = newTask.Title,
-            Description = newTask.Description,
-            DueDate = newTask.DueDate,
-            IsCompleted = newTask.IsCompleted,
-            Priority = (Priority)newTask.Priority,
-            Visibility = (Visibility)newTask.Visibility,
-            CreatedBy = newTask.CreatedBy,
-            ColumnId = null
-        });
+
+        _context.Tasks.Add(taskToInsert);
         await _context.SaveChangesAsync();
 
-        return new Models.Task
-        {
-            Title = newTask.Title,
-            Description = newTask.Description,
-            DueDate = newTask.DueDate,
-            IsCompleted = newTask.IsCompleted,
-            Priority = (Priority)newTask.Priority,
-            Visibility = (Visibility)newTask.Visibility,
-            CreatedBy = newTask.CreatedBy
-        };
+        return taskToInsert;
     }
 
     public async Task<bool> DeleteTaskAsync(Guid taskId)
@@ -316,6 +292,36 @@ public class TaskService : ITaskService
                 Visibility = (int)t.Visibility
             })
             .ToListAsync();
+    }
+
+    public async Task<List<GetTaskResponse>> GetTasksByProjectIdAsync(Guid projectId, ClaimsPrincipal user)
+    {
+        var currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null || !Guid.TryParse(currentUserId, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token không hợp lệ hoặc thiếu thông tin định danh.");
+        }
+
+        // Lấy tất cả tasks thuộc các column của project, và user có quyền (creator/assignee)
+        var tasks = await _context.Tasks
+            .Where(t => t.Column != null
+                && t.Column.ProjectId == projectId
+                && (t.CreatedBy == userId || t.AssigneeId == userId))
+            .Select(t => new GetTaskResponse
+            {
+                TaskId = t.TaskId,
+                ColumnId = t.ColumnId,
+                Title = t.Title,
+                Description = t.Description,
+                DueDate = t.DueDate,
+                IsCompleted = t.IsCompleted,
+                Priority = (int)t.Priority,
+                Visibility = (int)t.Visibility
+            })
+            .OrderBy(t => t.DueDate)
+            .ToListAsync();
+
+        return tasks;
     }
 
     public Task<List<GetTaskResponse>> GetTasksByVisibilityAsync(string visibility)

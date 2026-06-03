@@ -1,7 +1,9 @@
 using LetDoIt.Api.Data;
+using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using LetDoIt.Api.Workers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -15,6 +17,16 @@ builder.Services.AddValidation();
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// builder.Services.AddIdentity<Users, IdentityRole>(options =>
+// {
+//     options.Password.RequireDigit = true;
+//     options.Password.RequireLowercase = true;
+//     options.Password.RequireNonAlphanumeric = true;
+//     options.Password.RequireUppercase = true;
+//     options.Password.RequiredLength = 8;
+// }).AddEntityFrameworkStores<LetDoItContext>();
+
 
 builder.Services.AddDbContext<LetDoItContext>(options => options.UseNpgsql(connectionString));
 
@@ -31,7 +43,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
-        }; 
+        };
     });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -59,7 +71,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+            policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5174")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -71,11 +83,12 @@ var app = builder.Build();
 app.UseRouting();
 app.UseCors("AllowReactApp");
 
-// ⚠️ THỨ TỰ QUAN TRỌNG:
-app.UseMiddleware<ResponseWrapperMiddleware>();    // ← Outer layer (bắt đầu trước)
-app.UseMiddleware<ExceptionHandlingMiddleware>();  // ← Inner layer
-
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ResponseWrapperMiddleware>();
+
 app.MapControllers();
 
 app.MigrateDb();

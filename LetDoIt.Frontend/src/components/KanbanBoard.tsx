@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Filter, Plus, SortDesc } from "lucide-react";
+import { ArrowLeft, Filter, Plus, SortDesc } from "lucide-react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 import {
-  getColumns,
+  getColumnsByProject,
   createColumn,
   deleteColumn,
   changeColumnPosition,
@@ -13,7 +14,7 @@ import {
 
 import {
   type TaskResponse,
-  getMyTasks,
+  getTasksByProject,
   moveTask,
   deleteTask,
 } from "../services/taskService";
@@ -30,16 +31,34 @@ import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import ColumnContainer from "../components/ColumnContainer";
 import TrashBin from "../components/TrashBin";
 import TaskCard from "../components/TaskCard";
-import type { DragEndEvent, DragStartEvent, DragOverEvent } from "@dnd-kit/core";
+import CreateTaskModal from "./Createtask";
+import type {
+  DragEndEvent,
+  DragStartEvent,
+  DragOverEvent,
+} from "@dnd-kit/core";
 import { createPortal } from "react-dom";
+import AddColaborators from "./AddColaborators";
 
-const KanbanBoard = () => {
+interface KanbanBoardProps {
+  projectId: string;
+  projectTitle?: string;
+}
+
+const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<TaskResponse | null>(null);
-  const [dragOriginalColumnId, setDragOriginalColumnId] = useState<string | null>(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [targetColumnId, setTargetColumnId] = useState<string | undefined>(
+    undefined,
+  );
+  const [dragOriginalColumnId, setDragOriginalColumnId] = useState<
+    string | null
+  >(null);
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
   const [overId, setOverId] = useState<string | null>(null);
   const sensors = useSensors(
@@ -50,27 +69,25 @@ const KanbanBoard = () => {
     }),
   );
 
-
-  // Fetch columns and tasks on mount
+  // Fetch columns and tasks for the specific project
   useEffect(() => {
     const fetchData = async () => {
-        try {
-          // Fetch columns
-          const columnsResponse = await getColumns();
-          const fetchedColumns: Column[] = columnsResponse.data;
-          fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
-          setColumns(fetchedColumns);
+      try {
+        setLoading(true);
+        // Fetch columns by projectId
+        const fetchedColumns = await getColumnsByProject(projectId);
+        fetchedColumns.sort((a, b) => (a.position || 0) - (b.position || 0));
+        setColumns(fetchedColumns);
 
-          // Fetch tasks
-          const tasksResponse = await getMyTasks();
-          const fetchedTasks: TaskResponse[] = tasksResponse.data;
-          setTasks(fetchedTasks);
-        } catch (error) {
-          console.error("Failed to fetch data:", error);
-          toast("Failed to load data");
-        } finally {
-          setLoading(false);
-        }
+        // Fetch tasks by projectId
+        const fetchedTasks = await getTasksByProject(projectId);
+        setTasks(fetchedTasks);
+      } catch (error) {
+        console.error("Failed to fetch project data:", error);
+        toast("Failed to load project data");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -80,21 +97,21 @@ const KanbanBoard = () => {
       fetchData();
     };
 
-    // Listen for auth change events (from login)
-    const handleAuthChange = () => {
-      setLoading(true);
-      fetchData();
-    };
-
     window.addEventListener("taskCreated", handleTaskCreated);
-    window.addEventListener("authChange", handleAuthChange);
     return () => {
       window.removeEventListener("taskCreated", handleTaskCreated);
-      window.removeEventListener("authChange", handleAuthChange);
     };
-  }, []);
+  }, [projectId]);
 
-  if (loading) return <div className="p-6">Loading tasks...</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-[#5E548E] border-t-transparent rounded-full animate-spin" />
+          <p className="text-gray-500 font-medium">Loading board...</p>
+        </div>
+      </div>
+    );
 
   // Helper function to get tasks for a specific column
   const getTasksForColumn = (columnId: string): TaskResponse[] => {
@@ -104,9 +121,11 @@ const KanbanBoard = () => {
   const createNewColumn = async () => {
     try {
       const columnTitle = `New Column ${columns.length + 1}`;
-      const response = await createColumn(columnTitle, columns.length);
-
-      const newColumn: Column = response.data;
+      const newColumn = await createColumn(
+        columnTitle,
+        columns.length,
+        projectId,
+      );
       setColumns([...columns, newColumn]);
       toast("Column created successfully");
     } catch (error) {
@@ -122,7 +141,9 @@ const KanbanBoard = () => {
       toast("Column deleted successfully");
     } catch (error) {
       console.error("Failed to delete column:", error);
-      toast("Failed to delete column");
+      toast(
+        "Please move or delete all tasks in the column before deleting it.",
+      );
     }
   };
 
@@ -200,7 +221,10 @@ const KanbanBoard = () => {
         if (activeIndex === -1) return prevTasks;
 
         const newTasks = [...prevTasks];
-        const activeTask = { ...newTasks[activeIndex], columnId: overIdLocal as string };
+        const activeTask = {
+          ...newTasks[activeIndex],
+          columnId: overIdLocal as string,
+        };
         newTasks[activeIndex] = activeTask;
 
         return arrayMove(newTasks, activeIndex, activeIndex);
@@ -244,7 +268,9 @@ const KanbanBoard = () => {
       const newColumns = arrayMove([...columns], activeIndex, overIndex);
       setColumns(newColumns);
 
-      const newPosition = newColumns.findIndex((col) => col.columnId === activeId);
+      const newPosition = newColumns.findIndex(
+        (col) => col.columnId === activeId,
+      );
 
       try {
         await changeColumnPosition(activeId, newPosition);
@@ -273,22 +299,20 @@ const KanbanBoard = () => {
         return;
       }
 
-      // Resolve the actual target columnId:
-      // - If dropped over a column → overId is the columnId
-      // - If dropped over another task → overId is a taskId, get columnId from that task
+      // Resolve the actual target columnId
       let targetColumnId: string;
       if (over.data.current?.type === "column") {
         targetColumnId = overId;
       } else if (over.data.current?.type === "task") {
-        targetColumnId = over.data.current.task?.columnId
-          ?? tasks.find((t) => t.taskId === overId)?.columnId
-          ?? overId;
+        targetColumnId =
+          over.data.current.task?.columnId ??
+          tasks.find((t) => t.taskId === overId)?.columnId ??
+          overId;
       } else {
         targetColumnId = overId;
       }
 
       try {
-        // Use savedOriginalColumnId (from before onDragOver's optimistic update)
         if (savedOriginalColumnId && savedOriginalColumnId !== targetColumnId) {
           await moveTask(tasks[activeIndex].taskId, targetColumnId);
           toast.success("Task moved successfully");
@@ -305,15 +329,31 @@ const KanbanBoard = () => {
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
       {/* Header */}
+      <div className=" flex justify-between ">
+        {/* BACK TO HOME BUTTON */}
+        <button
+          onClick={() => navigate("/home")}
+          className="flex w-fit mb-4 items-center gap-2 px-3 py-2 bg-white border-2 border-black rounded-xl hover:bg-yellow-300 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 font-medium"
+          title="Back to Home"
+        >
+          <ArrowLeft size={18} />
+          <span className="hidden sm:inline">Back to Home</span>
+        </button>
+        {/* ADD COLLABORATORS BUTTON */}
+        <AddColaborators projectId={projectId} />
+      </div>
       <div className="flex justify-between items-end mb-8">
+        {/* <div className="flex items-center gap-4"> */}
+
         <div>
-          <h2 className="font-cherry text-5xl text-[#5E548E] tracking-wide mb-2">
-            Today's Flow
+          <h2 className="font-cherry text-5xl text-[#5E548E] tracking-wide mb-1">
+            {projectTitle || "Project Board"}
           </h2>
           <p className="text-gray-500">
             Organize your thoughts, one tile at a time.
           </p>
         </div>
+        {/* </div> */}
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm font-medium">
             <Filter size={18} />
@@ -325,6 +365,7 @@ const KanbanBoard = () => {
           </button>
         </div>
       </div>
+
       {/* Kanban Columns */}
       <DndContext
         onDragStart={onDragStart}
@@ -358,6 +399,10 @@ const KanbanBoard = () => {
                         tasks={getTasksForColumn(col.columnId)}
                         columns={columns}
                         isOverTrash={isTaskOverTrash}
+                        onAddTask={(columnId) => {
+                          setTargetColumnId(columnId);
+                          setIsTaskModalOpen(true);
+                        }}
                       />
                     </div>
                   ))
@@ -379,6 +424,7 @@ const KanbanBoard = () => {
                 updateColumnTitle={updateColumnTitle}
                 tasks={getTasksForColumn(activeColumn)}
                 columns={columns}
+                onAddTask={() => {}}
               />
             )}
             {activeTask && (
@@ -388,6 +434,13 @@ const KanbanBoard = () => {
           document.body,
         )}
       </DndContext>
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        columnId={targetColumnId}
+      />
     </div>
   );
 };

@@ -1,8 +1,7 @@
 $kind: collection
-name: 'LetDoIt API'
-description: 'Complete API collection for the LetDoIt task management application.'
+name: LetDoIt API
+description: Complete API collection for the LetDoIt task management application.
 auth:
   type: bearer
   credentials:
-    - key: token
-      value: '{{token}}'
+    token: eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiRHV5IEtoYW5nIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZWlkZW50aWZpZXIiOiIxYWE5N2YxZi01OGI2LTQxNTItYjI5NC1kMWEzZGI0MmJhYWEiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJVc2VyIiwic3ViIjoiMWFhOTdmMWYtNThiNi00MTUyLWIyOTQtZDFhM2RiNDJiYWFhIiwiZXhwIjoxNzgwNTM2NTIxLCJpc3MiOiJsZXRkb2l0YXBpIiwiYXVkIjoiTGV0RG9JdEF1ZGllbmNlIn0.Dt6IG3Mp3Q1gfK9x0aYcIsjeKFgGRYE9zOBOdfEbsfsJzfxzfX9xyR4Rhyl_6vAfftdYTddqSHcrBOKOblaD-Q

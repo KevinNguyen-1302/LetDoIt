@@ -41,19 +41,19 @@ const Sidebar = () => {
 
         <nav className="h-fit space-y-2 border-2 border-gray-700 py-2 px-2 rounded-2xl flex flex-col">
           <Link to="/home" className={getLinkClasses("/home")}>
-            <House size={20} className="min-w-[20px]" />
+            <House size={20} className="min-w-5" />
             {isExpanded && <span>Home</span>}
           </Link>
           <Link to="/calendar" className={getLinkClasses("/calendar")}>
-            <Calendar size={20} className="min-w-[20px]" />
+            <Calendar size={20} className="min-w-5" />
             {isExpanded && <span>Calendar</span>}
           </Link>
           <Link to="/focus" className={getLinkClasses("/focus")}>
-            <Timer size={20} className="min-w-[20px]" />
+            <Timer size={20} className="min-w-5" />
             {isExpanded && <span>Focus</span>}
           </Link>
           <Link to="/analytics" className={getLinkClasses("/analytics")}>
-            <LineChart size={20} className="min-w-[20px]" />
+            <LineChart size={20} className="min-w-5" />
             {isExpanded && <span>Analytics</span>}
           </Link>
         </nav>

@@ -1,8 +1,11 @@
 $kind: http-request
-name: Get User
-method: GET
-url: "{{baseUrl}}/api/User/GetByUsername/Hong Nhung"
-order: 4000
+name: New Request
+method: POST
+url: "{{baseUrl}}/api/project/AddMemberToProject/a94b855c-4676-4276-b8cf-760ce0628408/members/1bd376b7-fa54-4342-8496-203283e32da0"
+body:
+  type: json
+  content: "{}"
+order: 4014048422053452
 auth:
   type: bearer
   credentials:

@@ -28,6 +28,14 @@ namespace LetDoIt.Api.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpGet("{projectId}")]
+        public async Task<ActionResult<List<Column>>> GetColumnsByProject(Guid projectId)
+        {
+            var columns = await _service.GetColumnsByProjectIdAsync(projectId, User);
+            return Ok(columns);
+        }
+
+        [Authorize(Roles = "User")]
         [HttpPost]
         public async Task<IActionResult> CreateColumn(CreateColumnRequest request)
         {
