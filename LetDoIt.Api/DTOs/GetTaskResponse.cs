@@ -13,5 +13,8 @@ namespace LetDoIt.Api.DTOs
         public int Priority { get; set; } = 3; // Default to Medium
         public Guid? ColumnId { get; set; }
         public int Visibility { get; set; } = 2; // Default to Private
+        public Guid? AssigneeId { get; set; }
+        public string? AssigneeName { get; set; }
+        public string? AssigneeAvatarUrl { get; set; }
     }
 }

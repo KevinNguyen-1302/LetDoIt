@@ -9,9 +9,9 @@ namespace LetDoIt.Api.Services
         Task<GetTaskResponse?> GetTaskByIdAsync(Guid taskId);
         Task<Models.Task> CreateTaskAsync(CreateTaskRequest request, ClaimsPrincipal user);
         Task<bool> UpdateTaskAsync(Guid taskId, UpdateTaskRequest task, ClaimsPrincipal user);
-        Task<bool> DeleteTaskAsync(Guid taskId);
+        Task<bool> DeleteTaskAsync(Guid taskId, ClaimsPrincipal user);
         Task<List<GetTaskResponse>> GetTasksByUserId(Guid userId);
-        Task<bool> ChangePriority(Guid taskId, Priority? priority);
+        Task<bool> ChangePriority(Guid taskId, ClaimsPrincipal user, Priority? priority);
         Task<List<GetTaskResponse>> GetMyTask(ClaimsPrincipal user);
         Task<bool> MoveTask(Guid taskId, Guid newColumnId, ClaimsPrincipal user);
         Task<List<GetTaskResponse>> GetTasksByDueDateAsync(DateTime dueDate, ClaimsPrincipal user);

@@ -38,7 +38,7 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
             DisplayName = u.DisplayName,
             AvatarUrl = u.AvatarUrl
         })
-        .Take(20)
+        .Take(10)
         .ToListAsync();
 
         return users;

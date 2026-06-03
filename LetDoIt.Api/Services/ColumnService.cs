@@ -12,6 +12,7 @@ public class ColumnService : IColumnService
 {
     readonly LetDoItContext context;
     private readonly string _connectionString;
+    private static readonly string[] ColumnWriteRoles = ["Manager"];
 
 
     public ColumnService(LetDoItContext context)
@@ -29,8 +30,7 @@ public class ColumnService : IColumnService
             return false;
         }
 
-        // Kiểm tra user có quyền truy cập project không
-        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
+        if (!await UserCanChangeColumnPositionAsync(userId, column.ProjectId))
         {
             return false;
         }
@@ -65,12 +65,21 @@ public class ColumnService : IColumnService
     {
         var userId = GetUserId(user);
 
-        // Kiểm tra user có quyền truy cập project không
-        if (!await UserCanAccessProjectAsync(userId, request.ProjectId))
+        if (!await UserCanCreateColumnAsync(userId, request.ProjectId))
         {
             return null;
         }
 
+        // Kiểm tra số lượng column đã đạt tối đa chưa
+        var maxColumns = await context.Columns
+            .Where(c => c.ProjectId == request.ProjectId)
+            .CountAsync();
+
+        if (maxColumns >= 10)
+        {
+            return null;
+        }
+        // Tính position mới
         var maxPosition = await context.Columns
             .Where(c => c.ProjectId == request.ProjectId)
                 .Select(c => (int?)c.Position) // Ép kiểu nullable để tránh lỗi nếu chưa có dòng nào
@@ -93,14 +102,13 @@ public class ColumnService : IColumnService
     {
         var userId = GetUserId(user);
         var column = await context.Columns.FirstOrDefaultAsync(c => c.ColumnId == columnId);
-        
+
         if (column == null)
         {
             return false;
         }
 
-        // Kiểm tra user có quyền truy cập project không
-        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
+        if (!await UserCanDeleteColumnAsync(userId, column.ProjectId))
         {
             return false;
         }
@@ -120,8 +128,7 @@ public class ColumnService : IColumnService
             return false;
         }
 
-        // Kiểm tra user có quyền truy cập project không
-        if (!await UserCanAccessProjectAsync(userId, column.ProjectId))
+        if (!await UserCanUpdateColumnAsync(userId, column.ProjectId))
         {
             return false;
         }
@@ -147,7 +154,7 @@ public class ColumnService : IColumnService
             .Where(c => c.Project != null && c.Project.UserId == userId)
             .OrderBy(c => c.Position)
             .ToListAsync();
-        
+
         return columns;
     }
 
@@ -171,11 +178,40 @@ public class ColumnService : IColumnService
 
     private async Task<bool> UserCanAccessProjectAsync(Guid userId, Guid projectId)
     {
-        // Kiểm tra user có phải là owner của project
-        var project = await context.Projects
-            .FirstOrDefaultAsync(p => p.ProjectId == projectId && p.UserId == userId);
-        
+        // Kiểm tra user có phải là owner hoặc member của project
+        var project = await context.ProjectMembers
+            .Where(pm => pm.ProjectId == projectId && pm.UserId == userId)
+            .FirstOrDefaultAsync();
+
         return project != null;
+    }
+
+    private Task<bool> UserCanCreateColumnAsync(Guid userId, Guid projectId)
+    {
+        return UserHasProjectRoleAsync(userId, projectId, ColumnWriteRoles);
+    }
+
+    private Task<bool> UserCanUpdateColumnAsync(Guid userId, Guid projectId)
+    {
+        return UserHasProjectRoleAsync(userId, projectId, ColumnWriteRoles);
+    }
+
+    private Task<bool> UserCanDeleteColumnAsync(Guid userId, Guid projectId)
+    {
+        return UserHasProjectRoleAsync(userId, projectId, ColumnWriteRoles);
+    }
+
+    private Task<bool> UserCanChangeColumnPositionAsync(Guid userId, Guid projectId)
+    {
+        return UserHasProjectRoleAsync(userId, projectId, ColumnWriteRoles);
+    }
+
+    private async Task<bool> UserHasProjectRoleAsync(Guid userId, Guid projectId, params string[] allowedRoles)
+    {
+        return await context.ProjectMembers.AnyAsync(pm =>
+            pm.ProjectId == projectId
+            && pm.UserId == userId
+            && allowedRoles.Contains(pm.Role));
     }
 
     private static Guid GetUserId(ClaimsPrincipal user)

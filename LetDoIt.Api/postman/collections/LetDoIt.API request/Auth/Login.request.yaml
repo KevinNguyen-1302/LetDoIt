@@ -1,22 +1,20 @@
 $kind: http-request
 name: Login
 method: POST
-url: '{{baseUrl}}/api/User/Login'
+url: "{{baseUrl}}/api/user/Login"
 order: 2000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
     {
-      "username": "johndoe",
-      "email": "johndoe@example.com",
-      "password": "Password1@"
+      "username": "Duy Khang",
+      "email": "duykhang.personal@gmail.com",
+      "password": "13022001A@a"
     }
 scripts:
   - type: afterResponse
-    language: text/javascript
     code: |-
       const json = pm.response.json();
       if (json.data && json.data.accessToken) {
@@ -24,3 +22,4 @@ scripts:
       } else if (json.accessToken) {
           pm.environment.set("token", json.accessToken);
       }
+    language: text/javascript

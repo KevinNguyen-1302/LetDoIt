@@ -21,7 +21,6 @@ public class Task
     public DateTime DueDate { get; set; }
     public bool IsCompleted { get; set; } = false; // Default to not completed
     public Priority Priority { get; set; } = Priority.Medium; // Default to Medium
-
     public Guid? ColumnId { get; set; } // Foreign Key to Column.Id (nullable for now)
 
     [ForeignKey("ColumnId")]

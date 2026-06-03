@@ -62,6 +62,7 @@ builder.Services.AddControllers()
     {
         // Tự động convert Enum từ số sang chuỗi chữ cho dễ đọc
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
 builder.Services.AddHostedService<PriorityWorker>();

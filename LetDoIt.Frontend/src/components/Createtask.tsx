@@ -3,10 +3,12 @@ import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { createTask, type CreateTaskRequest } from "../services/taskService";
+import { getProjectMembers } from "../services/projectService";
 interface CreateTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   columnId?: string;
+  projectId?: string;
 }
 
 const PRIORITY_OPTIONS = [
@@ -16,19 +18,26 @@ const PRIORITY_OPTIONS = [
   { value: 4, label: "Urgent" },
 ];
 
-const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) => {
+const CreateTaskModal = ({
+  isOpen,
+  onClose,
+  columnId,
+  projectId,
+}: CreateTaskModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
+  const [members, setMembers] = useState<any[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     dueDate: "",
     dueTime: "",
     priority: "2",
+    assigneeId: "",
   });
 
-  // Fetch categories khi modal mở
+  // Fetch project members and check token khi modal mở
   useEffect(() => {
     if (isOpen) {
       const token = localStorage.getItem("token");
@@ -38,8 +47,22 @@ const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) =>
         onClose();
         return;
       }
+
+      const fetchMembers = async () => {
+        if (!projectId) return;
+        try {
+          setIsLoadingMembers(true);
+          const membersList = await getProjectMembers(projectId);
+          setMembers(membersList || []);
+        } catch (error) {
+          console.error("Failed to load project members:", error);
+        } finally {
+          setIsLoadingMembers(false);
+        }
+      };
+      fetchMembers();
     }
-  }, [isOpen]);
+  }, [isOpen, projectId]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -72,13 +95,13 @@ const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) =>
     const dateTimeString = formData.dueTime
       ? `${formData.dueDate}T${formData.dueTime}:00`
       : `${formData.dueDate}T23:59:59`;
-    
+
     // Parse thành Date object rồi convert sang UTC ISO string
     const dueDateObj = new Date(dateTimeString);
     const dueDateTime = dueDateObj.toISOString();
     const nowUTC = new Date();
 
-// 1️⃣ Get UTC timestamp in milliseconds since Unix epoch
+    // 1️⃣ Get UTC timestamp in milliseconds since Unix epoch
     const utcTimestampMs = nowUTC.getTime(); // same as Date.now()
     try {
       setLoading(true);
@@ -88,10 +111,11 @@ const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) =>
         dueDate: dueDateTime,
         priority: parseInt(formData.priority),
         columnId,
+        assigneeId: formData.assigneeId || null,
       };
       if (dueDateObj.getTime() < utcTimestampMs) {
-      toast.error("Please choose a time in the future!");
-      return;
+        toast.error("Please choose a time in the future!");
+        return;
       }
       await createTask(taskData);
       toast.success("Create new task successfully!");
@@ -106,6 +130,7 @@ const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) =>
         dueDate: "",
         dueTime: "",
         priority: "2",
+        assigneeId: "",
       });
       onClose();
     } catch (error: any) {
@@ -211,13 +236,35 @@ const CreateTaskModal = ({ isOpen, onClose, columnId }: CreateTaskModalProps) =>
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none appearance-none bg-white"
+                className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none bg-white cursor-pointer"
               >
                 {PRIORITY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Assignee Select */}
+            <div>
+              <label className="block text-black font-bold mb-1 ml-2">
+                Assignee
+              </label>
+              <select
+                name="assigneeId"
+                value={formData.assigneeId}
+                onChange={handleChange}
+                disabled={isLoadingMembers}
+                className="w-full px-4 py-3 rounded-[10px] border-2 border-black outline-none bg-white cursor-pointer disabled:opacity-50"
+              >
+                <option value="">Unassigned</option>
+                {Array.isArray(members) &&
+                  members.map((member) => (
+                    <option key={member.userId} value={member.userId}>
+                      {member.username} ({member.role})
+                    </option>
+                  ))}
               </select>
             </div>
           </div>

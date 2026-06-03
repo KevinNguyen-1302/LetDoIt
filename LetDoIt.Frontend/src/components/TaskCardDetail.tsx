@@ -3,7 +3,9 @@ import { createPortal } from "react-dom";
 import { X, Edit2, CheckCircle, Clock, Eye, EyeOff, Save, Check, RotateCcw } from "lucide-react";
 import * as Icons from "lucide-react";
 import { toast } from "react-toastify";
-import { updateTask, type TaskResponse } from "../services/taskService";
+import { updateTask, type TaskResponse, type UpdateTaskRequest } from "../services/taskService";
+import { getProjectMembers } from "../services/projectService";
+import { useParams } from "react-router-dom";
 import type { Column } from "../services/columnService";
 
 // Helper component to dynamically render category icons from Lucide library
@@ -25,8 +27,11 @@ interface Props {
 }
 
 const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
+    const { projectId } = useParams<{ projectId: string }>();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [members, setMembers] = useState<any[]>([]);
+    const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -36,6 +41,7 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
         dueTime: "",
         priority: String(task.priority || 2),
         visibility: task.visibility === 2 ? "2" : "1", // 1 = Private, 2 = Public
+        assigneeId: task.assigneeId || "",
     });
 
     // Load task values into form data on open or task update
@@ -58,9 +64,27 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                 dueTime: localTime,
                 priority: String(task.priority),
                 visibility: String(task.visibility || 1),
+                assigneeId: task.assigneeId || "",
             });
         }
     }, [task, isOpen]);
+
+    useEffect(() => {
+        if (isOpen && projectId) {
+            const fetchMembers = async () => {
+                try {
+                    setIsLoadingMembers(true);
+                    const membersList = await getProjectMembers(projectId);
+                    setMembers(membersList || []);
+                } catch (error) {
+                    console.error("Failed to load project members", error);
+                } finally {
+                    setIsLoadingMembers(false);
+                }
+            };
+            fetchMembers();
+        }
+    }, [isOpen, projectId]);
 
     if (!isOpen) return null;
 
@@ -142,7 +166,8 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                 dueDate: new Date(dateTimeString).toISOString(),
                 priority: parseInt(formData.priority),
                 visibility: parseInt(formData.visibility),
-            };
+                assigneeId: formData.assigneeId || null,
+            } as UpdateTaskRequest;
 
             await updateTask(task.taskId, updatedFields);
             toast.success("Task updated successfully!");
@@ -249,6 +274,23 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                                     <option value="4">Urgent</option>
                                 </select>
                             </div>
+                            <div>
+                                <label className="block text-sm font-black mb-1">Assignee</label>
+                                <select
+                                    name="assigneeId"
+                                    value={formData.assigneeId}
+                                    onChange={handleInputChange}
+                                    disabled={isLoadingMembers}
+                                    className="w-full px-3 py-2 rounded-xl border-2 border-black outline-none bg-white/70 focus:bg-white disabled:opacity-50"
+                                >
+                                    <option value="">Unassigned</option>
+                                    {Array.isArray(members) && members.map((member) => (
+                                        <option key={member.userId} value={member.userId}>
+                                            {member.username} ({member.role})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {/* Visibility Settings */}
@@ -334,6 +376,12 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                                         dateStyle: "medium",
                                         timeStyle: "short"
                                     })}</span>
+                                </p>
+                            )}
+                            {task.assigneeId && (
+                                <p className="text-sm font-bold text-gray-700 flex items-center gap-1.5 mt-2">
+                                    <Icons.User size={16} />
+                                    Assignee: <span className="underline">{task.assigneeName || 'Unknown'}</span>
                                 </p>
                             )}
                         </div>
