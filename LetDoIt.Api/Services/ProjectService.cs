@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using LetDoIt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Dapper;
@@ -13,58 +13,67 @@ public class ProjectService(LetDoItContext context) : IProjectService
 {
     private readonly LetDoItContext _context = context;
 
-    public async Task<bool> ChangeProjectAuthorAsync(Guid projectId, Guid currentAuthorId, Guid newAuthorId, ClaimsPrincipal user)
+    public async Task<bool> ChangeProjectAuthorAsync(Guid projectId, Guid newAuthorId, ClaimsPrincipal user)
     {
+        var requesterId = GetUserId(user);
+
+        // Lấy currentAuthorId từ DB để đảm bảo an toàn (không tin client)
+        var project = await _context.Projects.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.ProjectId == projectId)
+            ?? throw new ArgumentException("Project does not exist!");
+
+        if (project.UserId != requesterId)
+            throw new UnauthorizedAccessException("You are not the owner of this project!");
+
+        // Dùng UserId thực từ DB thay vì currentAuthorId từ client
+        var actualCurrentOwnerId = project.UserId;
+
         using var connection = _context.Database.GetDbConnection();
         if (connection.State == ConnectionState.Closed)
             await connection.OpenAsync();
 
-        // Khởi tạo Transaction bằng Dapper/SQL thuần
-        using (var transaction = connection.BeginTransaction())
+        using var transaction = connection.BeginTransaction();
+        try
         {
-            try
+            // 1. Cập nhật bảng projects (Đổi chủ)
+            string updateProjectSql = @"
+            UPDATE ""Projects""
+            SET ""CreatedBy"" = @NewOwnerId
+            WHERE ""project_id"" = @ProjectId AND ""CreatedBy"" = @CurrentOwnerId;";
+
+            // 2. Hạ quyền chủ cũ xuống làm Member
+            string demoteOldOwnerSql = @"
+            UPDATE ""ProjectMembers"" 
+            SET ""Role"" = 'Member' 
+            WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @CurrentOwnerId;";
+
+            // 3. Đôn chủ mới lên làm Manager
+            string promoteNewOwnerSql = @"
+            UPDATE ""ProjectMembers"" 
+            SET ""Role"" = 'Manager' 
+            WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @NewOwnerId;";
+
+            var affectedRows = await connection.ExecuteAsync(
+                updateProjectSql,
+                new { ProjectId = projectId, NewOwnerId = newAuthorId, CurrentOwnerId = actualCurrentOwnerId },
+                transaction);
+
+            if (affectedRows == 0)
             {
-                // 1. Cập nhật bảng projects (Đổi chủ)
-                string updateProjectSql = @"
-                UPDATE ""Projects""
-                SET ""CreatedBy"" = @NewOwnerId 
-                WHERE ""project_id"" = @ProjectId AND ""CreatedBy"" = @CurrentOwnerId;";
-
-                // 2. Hạ quyền ông chủ cũ xuống làm Member trong bảng thành viên
-                string demoteOldOwnerSql = @"
-                UPDATE ""ProjectMembers"" 
-                SET ""Role"" = 'Member' 
-                WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @CurrentOwnerId;";
-
-                // 3. Đôn ông chủ mới lên làm Manager
-                string promoteNewOwnerSql = @"
-                UPDATE ""ProjectMembers"" 
-                SET ""Role"" = 'Manager' 
-                WHERE ""ProjectId"" = @ProjectId AND ""UserId"" = @NewOwnerId;";
-
-                // Thực thi tuần tự ""các câu lệnh trong cùng transaction
-                var affectedRows = await connection.ExecuteAsync(updateProjectSql, new { ProjectId = projectId, NewOwnerId = newAuthorId, CurrentOwnerId = currentAuthorId }, transaction);
-
-                if (affectedRows == 0)
-                {
-                    // Nếu không tìm thấy project hoặc currentOwnerId không khớp, hủy kèo
-                    transaction.Rollback();
-                    return false;
-                }
-
-                await connection.ExecuteAsync(demoteOldOwnerSql, new { ProjectId = projectId, CurrentOwnerId = currentAuthorId }, transaction);
-                await connection.ExecuteAsync(promoteNewOwnerSql, new { ProjectId = projectId, NewOwnerId = newAuthorId }, transaction);
-
-                // Thành công tốt đẹp thì Commit xuống DB
-                transaction.Commit();
-                return true;
-            }
-            catch (Exception)
-            {
-                // Có biến cố gì là Rollback ngay, không sợ bị mất đồng bộ dữ liệu
                 transaction.Rollback();
-                throw;
+                return false;
             }
+
+            await connection.ExecuteAsync(demoteOldOwnerSql, new { ProjectId = projectId, CurrentOwnerId = actualCurrentOwnerId }, transaction);
+            await connection.ExecuteAsync(promoteNewOwnerSql, new { ProjectId = projectId, NewOwnerId = newAuthorId }, transaction);
+
+            transaction.Commit();
+            return true;
+        }
+        catch (Exception)
+        {
+            transaction.Rollback();
+            throw;
         }
     }
 
@@ -117,44 +126,6 @@ public class ProjectService(LetDoItContext context) : IProjectService
         await _context.SaveChangesAsync();
         return true;
     }
-
-    public async Task<(List<GetProjectRequest> Data, int TotalCount)> GetProjectsByUserIdAsync(Guid userId,
-        int pageNumber = 1,
-        int pageSize = 9,
-        string? searchTerm = null)
-    {
-        var query = _context.Projects
-            .Where(p => !p.IsDeleted && p.ProjectMembers.Any(pm => pm.UserId == userId));
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            // Với PostgreSQL, ông có thể dùng EF.Functions.ILike để tìm kiếm không phân biệt hoa thường
-            query = query.Where(p => p.Title.Contains(searchTerm));
-        }
-
-        int totalCount = await query.CountAsync();
-
-        var projectDtos = await _context.Projects
-            .Include(p => p.User)
-            .OrderByDescending(p => p.CreatedAt)
-            .Where(p => !p.IsDeleted && p.ProjectMembers.Any(pm => pm.UserId == userId))
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        var projects = projectDtos.Select(p => new GetProjectRequest
-        {
-            ProjectId = p.ProjectId,
-            Title = p.Title,
-            CreatedAt = p.CreatedAt,
-            Role = p.ProjectMembers.FirstOrDefault(pm => pm.UserId == userId)?.Role ?? "Member",
-            NumberOfMembers = p.ProjectMembers.Count,
-            AuthorName = p.User?.Username ?? "Unknown"
-        }).ToList();
-
-        return (projects, totalCount);
-    }
-
     public async Task<bool> UpdateProjectAsync(Guid projectId, UpdateProjectRequest request, ClaimsPrincipal user)
     {
         var userId = GetUserId(user);
@@ -166,16 +137,6 @@ public class ProjectService(LetDoItContext context) : IProjectService
         project.Title = request.Title;
         await _context.SaveChangesAsync();
         return true;
-    }
-
-    private static Guid GetUserId(ClaimsPrincipal user)
-    {
-        var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("Token does not contain a valid UserId!");
-        }
-        return userId;
     }
 
     public async Task<(List<GetProjectRequest> Data, int TotalCount)> GetProjectsByUserIdAsyncWithDapper(Guid userId, int pageNumber = 1, int pageSize = 9, string? searchTerm = null)
@@ -210,7 +171,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
             Offset = offset
         };
 
-        using var connection = _context.Database.GetDbConnection();
+        var connection = _context.Database.GetDbConnection();
         if (connection.State == ConnectionState.Closed)
             await connection.OpenAsync();
 
@@ -227,14 +188,16 @@ public class ProjectService(LetDoItContext context) : IProjectService
     {
         string sql = @"
         SELECT 
+            u.""UserId"" AS ""userId"",
             u.""Username"" AS ""username"",
+            u.""AvatarUrl"" AS ""avatarUrl"",
             pm.""Role"" AS ""role""
         FROM ""ProjectMembers"" pm
         INNER JOIN ""Users"" u ON pm.""UserId"" = u.""UserId""
         WHERE pm.""ProjectId"" = @ProjectId;
         ";
 
-        using var connection = _context.Database.GetDbConnection();
+        var connection = _context.Database.GetDbConnection();
         if (connection.State == ConnectionState.Closed)
             await connection.OpenAsync();
 
@@ -244,7 +207,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
 
     public async Task<bool> AddMemberToProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
     {
-        using var connection = _context.Database.GetDbConnection();
+        var connection = _context.Database.GetDbConnection();
         if (connection.State == ConnectionState.Closed)
             await connection.OpenAsync();
         var ownerId = GetUserId(user);
@@ -270,7 +233,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
 
     public async Task<bool> RemoveMemberFromProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
     {
-        using var connection = _context.Database.GetDbConnection();
+        var connection = _context.Database.GetDbConnection();
         if (connection.State == ConnectionState.Closed)
             await connection.OpenAsync();
         var ownerId = GetUserId(user);
@@ -283,5 +246,53 @@ public class ProjectService(LetDoItContext context) : IProjectService
         _context.ProjectMembers.Remove(member);
         await _context.SaveChangesAsync();
         return true;
+    }
+    public async Task<(List<GetProjectRequest> Data, int TotalCount)> GetProjectsByUserIdAsync(Guid userId,
+        int pageNumber = 1,
+        int pageSize = 9,
+        string? searchTerm = null)
+    {
+        var query = _context.Projects
+            .Where(p => !p.IsDeleted && p.ProjectMembers.Any(pm => pm.UserId == userId));
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            // Với PostgreSQL, ông có thể dùng EF.Functions.ILike để tìm kiếm không phân biệt hoa thường
+            query = query.Where(p => p.Title.Contains(searchTerm));
+        }
+
+        int totalCount = await query.CountAsync();
+
+        var projectDtos = await _context.Projects
+            .Include(p => p.User)
+            .OrderByDescending(p => p.CreatedAt)
+            .Where(p => !p.IsDeleted && p.ProjectMembers.Any(pm => pm.UserId == userId))
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var projects = projectDtos.Select(p => new GetProjectRequest
+        {
+            ProjectId = p.ProjectId,
+            Title = p.Title,
+            CreatedAt = p.CreatedAt,
+            Role = p.ProjectMembers.FirstOrDefault(pm => pm.UserId == userId)?.Role ?? "Member",
+            NumberOfMembers = p.ProjectMembers.Count,
+            AuthorName = p.User?.Username ?? "Unknown",
+        }).ToList();
+        foreach (var project in projects)
+        {
+            project.MemberCount = (await GetMembersByProjectIdAsync(project.ProjectId)).Count;
+        }
+        return (projects, totalCount);
+    }
+    private static Guid GetUserId(ClaimsPrincipal user)
+    {
+        var userIdClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("Token does not contain a valid UserId!");
+        }
+        return userId;
     }
 }

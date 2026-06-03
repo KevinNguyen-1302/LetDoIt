@@ -12,13 +12,13 @@ namespace LetDoIt.Api.Controllers
     [ApiController]
     public class UserController(IAuthService authService) : ControllerBase
     {
-        public static Users user = new ();
+        public static Users user = new();
 
         [HttpPost]
         public async Task<ActionResult<Users>> Register(RegisterRequest request)
         {
             var user = await authService.RegisterAsync(request);
-            if (user is null) 
+            if (user is null)
             {
                 return BadRequest("Username or email already exists.");
             }
@@ -29,7 +29,7 @@ namespace LetDoIt.Api.Controllers
         public async Task<ActionResult<TokenResponseDto>> Login(LoginRequest request)
         {
             var result = await authService.LoginAsync(request);
-            if(result is null)
+            if (result is null)
             {
                 return BadRequest("Invalid username or password.");
             }
@@ -64,15 +64,15 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize]
         [HttpGet("{username}")]
-        public async Task<ActionResult<UserDto>> GetByUsername(string username)
+        public async Task<ActionResult<List<UserDto>>> GetByUsername(string username)
         {
-            var user = await authService.GetUserByUsernameAsync(username);
-            if (user is null)
+            var users = await authService.GetUserByUsernameAsync(username);
+            if (users == null || !users.Any())
             {
                 return NotFound("User not found.");
             }
 
-            return Ok(new UserDto { UserId = user.UserId, Username = user.Username, Email = user.Email });
+            return Ok(users);
         }
 
         [HttpPost]

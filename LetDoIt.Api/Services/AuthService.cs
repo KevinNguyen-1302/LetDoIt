@@ -26,9 +26,22 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         return user;
     }
 
-    public async Task<Users?> GetUserByUsernameAsync(string username)
+    public async Task<List<UserDto>> GetUserByUsernameAsync(string username)
     {
-        return await context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var users = await context.Users
+        .Where(u => EF.Functions.ILike(u.Username, $"%{username}%"))
+        .Select(u => new UserDto
+        {
+            UserId = u.UserId,
+            Username = u.Username,
+            Email = u.Email,
+            DisplayName = u.DisplayName,
+            AvatarUrl = u.AvatarUrl
+        })
+        .Take(20)
+        .ToListAsync();
+
+        return users;
     }
 
     public async Task<TokenResponseDto?> LoginAsync(LoginRequest request)
@@ -107,11 +120,9 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
     private string GenerateRefreshToken()
     {
         var randomBytes = new byte[32];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
-        }
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 
     private async Task<String> GenerateAndSaveRefreshTokenAsync(Users user)

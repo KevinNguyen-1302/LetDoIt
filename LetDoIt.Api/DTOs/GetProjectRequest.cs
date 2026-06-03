@@ -1,4 +1,7 @@
+using LetDoIt.Api.Models;
+
 namespace LetDoIt.Api.DTOs;
+
 public class GetProjectRequest
 {
     public Guid ProjectId { get; set; }
@@ -7,4 +10,5 @@ public class GetProjectRequest
     public string Role { get; set; } = string.Empty;
     public int NumberOfMembers { get; set; }
     public string AuthorName { get; set; } = string.Empty;
+    public int MemberCount { get; set; }
 }

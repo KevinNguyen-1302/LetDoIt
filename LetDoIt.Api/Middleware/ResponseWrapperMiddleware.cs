@@ -10,7 +10,6 @@ public class ResponseWrapperMiddleware
     public ResponseWrapperMiddleware(RequestDelegate next)
     {
         _next = next;
-        // ✅ Sử dụng cùng settings như Program.cs
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -40,8 +39,8 @@ public class ResponseWrapperMiddleware
             if (context.Response.StatusCode >= 200 && context.Response.StatusCode < 300)
             {
                 // Parse response body thành object
-                var data = string.IsNullOrEmpty(bodyText) 
-                    ? null 
+                var data = string.IsNullOrEmpty(bodyText)
+                    ? null
                     : JsonSerializer.Deserialize<object>(bodyText, _jsonOptions);
 
                 // Wrap vào ApiResponse format

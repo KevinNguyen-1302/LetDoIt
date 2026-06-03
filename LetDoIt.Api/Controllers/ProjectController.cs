@@ -62,12 +62,15 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize]
         [HttpPut("{projectId}")]
-        public async Task<ActionResult<ApiResponse<object>>> ChangeProjectAuthor(Guid projectId, Guid currentAuthorId, Guid newAuthorId, ClaimsPrincipal user)
+        public async Task<ActionResult<ApiResponse<object>>> ChangeProjectAuthor(Guid projectId, [FromBody] Guid newAuthorId)
         {
-            await _service.ChangeProjectAuthorAsync(projectId, currentAuthorId, newAuthorId, user);
+            if (newAuthorId == Guid.Empty)
+                throw new BusinessException(1007, "Cannot change project author", 400);
+
             if (projectId == Guid.Empty)
                 throw new BusinessException(1006, "Cannot change project author", 400);
-            return Ok();
+            await _service.ChangeProjectAuthorAsync(projectId, newAuthorId, User);
+            return Ok(new { Data = true });
         }
 
         [Authorize]
@@ -80,26 +83,18 @@ namespace LetDoIt.Api.Controllers
 
         [Authorize]
         [HttpPost("{projectId}/members/{memberId}")]
-        public async Task<ActionResult<ApiResponse<object>>> AddMemberToProject(Guid projectId, Guid memberId, ClaimsPrincipal user)
+        public async Task<ActionResult<ApiResponse<object>>> AddMemberToProject(Guid projectId, Guid memberId)
         {
-            await _service.AddMemberToProjectAsync(projectId, memberId, user);
-            if (projectId == Guid.Empty)
-                throw new BusinessException(1007, "Cannot find project", 404);
-            if (memberId == Guid.Empty)
-                throw new BusinessException(1009, "Cannot find member", 404);
-            return Ok();
+            await _service.AddMemberToProjectAsync(projectId, memberId, User);
+            return Ok(new { Data = true });
         }
 
         [Authorize]
-        [HttpDelete("{projectId}/members/{memberId}")]
-        public async Task<ActionResult<ApiResponse<object>>> RemoveMemberFromProject(Guid projectId, Guid memberId, ClaimsPrincipal user)
+        [HttpPut("{projectId}/members/{memberId}")]
+        public async Task<ActionResult<ApiResponse<object>>> RemoveMemberFromProject(Guid projectId, Guid memberId)
         {
-            await _service.RemoveMemberFromProjectAsync(projectId, memberId, user);
-            if (projectId == Guid.Empty)
-                throw new BusinessException(1008, "Cannot find project", 404);
-            if (memberId == Guid.Empty)
-                throw new BusinessException(1009, "Cannot find member", 404);
-            return Ok();
+            await _service.RemoveMemberFromProjectAsync(projectId, memberId, User);
+            return Ok(new { Data = true });
         }
     }
 }

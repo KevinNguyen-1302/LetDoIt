@@ -20,7 +20,9 @@ const TrashBin = ({ isActive }: TrashBinProps) => {
       } ${isActive ? "opacity-50" : ""}`}
     >
       <Trash2 size={24} />
-      <span className="text-sm">{isOver ? "Drop to delete" : "Drag here to delete"}</span>
+      <span className="text-sm">
+        {isOver ? "Drop to delete" : "Drag here to delete"}
+      </span>
     </div>
   );
 };

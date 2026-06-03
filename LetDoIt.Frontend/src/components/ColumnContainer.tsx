@@ -17,7 +17,8 @@ interface Props {
 }
 
 const ColumnContainer = (props: Props) => {
-  const { column, updateColumnTitle, tasks, columns, isOverTrash, onAddTask } = props;
+  const { column, updateColumnTitle, tasks, columns, isOverTrash, onAddTask } =
+    props;
   const [editMode, setEditMode] = useState(false);
   const [inputTitle, setInputTitle] = useState(column.title);
 
@@ -65,7 +66,7 @@ const ColumnContainer = (props: Props) => {
     <div
       ref={setNodeRef}
       style={style}
-      className="h-100 bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
+      className="h-full bg-[#fffadf] rounded-lg w-64 border-2 border-black cursor-grab relative flex flex-col"
     >
       <div
         {...attributes}
@@ -110,7 +111,9 @@ const ColumnContainer = (props: Props) => {
               />
             ))
           ) : (
-            <div className="text-md text-gray-400 text-center py-4">No tasks yet</div>
+            <div className="text-md text-gray-400 text-center py-4">
+              No tasks yet
+            </div>
           )}
         </div>
       </SortableContext>

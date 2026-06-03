@@ -1,0 +1,11 @@
+$kind: http-request
+name: Change Project Author
+url: '{{baseUrl}}/api/project/ChangeProjectAuthor/a94b855c-4676-4276-b8cf-760ce0628408'
+method: PUT
+order: 4078641391980209
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: '"1bd376b7-fa54-4342-8496-203283e32da0"'

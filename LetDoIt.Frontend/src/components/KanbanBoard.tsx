@@ -38,6 +38,7 @@ import type {
   DragOverEvent,
 } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
+import AddColaborators from "./AddColaborators";
 
 interface KanbanBoardProps {
   projectId: string;
@@ -140,7 +141,9 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
       toast("Column deleted successfully");
     } catch (error) {
       console.error("Failed to delete column:", error);
-      toast("Failed to delete column");
+      toast(
+        "Please move or delete all tasks in the column before deleting it.",
+      );
     }
   };
 
@@ -326,25 +329,31 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
   return (
     <div className="max-w-7xl mx-auto h-full flex flex-col p-6">
       {/* Header */}
+      <div className=" flex justify-between ">
+        {/* BACK TO HOME BUTTON */}
+        <button
+          onClick={() => navigate("/home")}
+          className="flex w-fit mb-4 items-center gap-2 px-3 py-2 bg-white border-2 border-black rounded-xl hover:bg-yellow-300 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 font-medium"
+          title="Back to Home"
+        >
+          <ArrowLeft size={18} />
+          <span className="hidden sm:inline">Back to Home</span>
+        </button>
+        {/* ADD COLLABORATORS BUTTON */}
+        <AddColaborators projectId={projectId} />
+      </div>
       <div className="flex justify-between items-end mb-8">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate("/home")}
-            className="flex items-center gap-2 px-3 py-2 bg-white border-2 border-black rounded-xl hover:bg-yellow-300 transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 font-medium"
-            title="Back to Home"
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Back to Home</span>
-          </button>
-          <div>
-            <h2 className="font-cherry text-5xl text-[#5E548E] tracking-wide mb-1">
-              {projectTitle || "Project Board"}
-            </h2>
-            <p className="text-gray-500">
-              Organize your thoughts, one tile at a time.
-            </p>
-          </div>
+        {/* <div className="flex items-center gap-4"> */}
+
+        <div>
+          <h2 className="font-cherry text-5xl text-[#5E548E] tracking-wide mb-1">
+            {projectTitle || "Project Board"}
+          </h2>
+          <p className="text-gray-500">
+            Organize your thoughts, one tile at a time.
+          </p>
         </div>
+        {/* </div> */}
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm font-medium">
             <Filter size={18} />

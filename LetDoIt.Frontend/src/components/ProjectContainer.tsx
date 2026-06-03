@@ -71,7 +71,8 @@ const ProjectContainer: React.FC<ProjectContainerProps> = ({
             await changeProjectAuthor(projectId, selectedMember.userId);
             isUpdated = true;
           } else {
-            const userDto = await getUserByUsername(editAuthor.trim());
+            const users = await getUserByUsername(editAuthor.trim());
+            const userDto = Array.isArray(users) ? users[0] : users;
             if (userDto && userDto.userId) {
               await changeProjectAuthor(projectId, userDto.userId);
               isUpdated = true;
