@@ -40,3 +40,24 @@
 ::-webkit-scrollbar-thumb:hover {
     background: #f1f1f1;
 }
+
+@keyframes hover-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+.element {
+  transition: 
+    box-shadow 0.8s ease,
+    filter 0.8s ease;
+}
+
+.element:hover, .element:focus-visible {
+  /* box-shadow: 0 10px 20px rgba(0, 0, 0, 1); */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .element:hover, .element:focus-visible {
+    animation: hover-pulse 0.8s ease infinite alternate;
+  }
+}

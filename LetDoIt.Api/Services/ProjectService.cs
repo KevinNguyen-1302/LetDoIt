@@ -277,7 +277,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
             Title = p.Title,
             CreatedAt = p.CreatedAt,
             Role = p.ProjectMembers.FirstOrDefault(pm => pm.UserId == userId)?.Role ?? "Member",
-            NumberOfMembers = p.ProjectMembers.Count,
+            NumberOfMembers = GetMembersByProjectIdAsync(p.ProjectId).Result.Count,
             AuthorName = p.User?.Username ?? "Unknown",
         }).ToList();
         foreach (var project in projects)

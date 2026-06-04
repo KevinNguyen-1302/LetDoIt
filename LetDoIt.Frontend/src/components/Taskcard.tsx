@@ -5,6 +5,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Column } from "../services/columnService";
 import type { TaskResponse } from "../services/taskService";
+import "../index.css";
 
 interface Props {
   task: TaskResponse;
@@ -112,7 +113,7 @@ const TaskCard = ({
         {...(isOverlay ? {} : attributes)}
         {...(isOverlay ? {} : listeners)}
         onClick={isOverlay ? undefined : () => setIsDetailOpen(true)}
-        className={`rounded-xl p-3 mb-3 border-2 ${
+        className={`rounded-xl p-3 mb-3 border-2 element ${
           isOverlay ? "cursor-grabbing" : "cursor-grab"
         } ${hoverClasses} ${cardClasses}`}
       >
@@ -167,12 +168,12 @@ const TaskCard = ({
 
           {/* Due date / Completed state */}
           {task.isCompleted ? (
-            <span className="flex items-center gap-0.5 text-green-700 font-extrabold bg-green-100 px-1.5 py-0.5 rounded-full border border-green-300">
+            <span className="flex items-center gap-0.5 text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full border border-green-300">
               <Check size={10} strokeWidth={3} />
               Done
             </span>
           ) : task.dueDate ? (
-            <span className="text-gray-600 font-bold">
+            <span className="text-gray-600 underline decoration-black underline-offset-2">
               Due:{" "}
               {new Date(task.dueDate).toLocaleDateString(undefined, {
                 month: "short",

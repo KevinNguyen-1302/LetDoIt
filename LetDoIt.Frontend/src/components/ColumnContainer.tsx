@@ -57,7 +57,7 @@ const ColumnContainer = (props: Props) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="h-full border-2 border-dashed border-black bg-[#c6c6c6] rounded-lg w-64 opacity-50 "
+        className="h-full min-h-48 border-2 border-dashed border-black bg-[#c6c6c6] rounded-lg w-64 opacity-50 "
       ></div>
     );
   }
