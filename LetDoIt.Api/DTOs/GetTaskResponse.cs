@@ -16,5 +16,6 @@ namespace LetDoIt.Api.DTOs
         public Guid? AssigneeId { get; set; }
         public string? AssigneeName { get; set; }
         public string? AssigneeAvatarUrl { get; set; }
+        public string CreatedByName { get; set; } = string.Empty;
     }
 }

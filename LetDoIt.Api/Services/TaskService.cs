@@ -12,7 +12,7 @@ namespace LetDoIt.Api.Services;
 public class TaskService(LetDoItContext context) : ITaskService
 {
     private readonly LetDoItContext _context = context;
-    private static readonly string[] TaskWriteRoles = ["Manager"];
+    private static readonly string[] TaskWriteRoles = ["Manager", "Member"];
 
     public async Task<bool> ChangePriority(Guid taskId, ClaimsPrincipal user, Priority? newPriority = null)
     {
@@ -87,6 +87,21 @@ public class TaskService(LetDoItContext context) : ITaskService
             {
                 throw new UnauthorizedAccessException("Bạn không có quyền thêm task vào project này.");
             }
+
+            // Kiểm tra Role của user trong project
+            var membership = await _context.ProjectMembers
+                .FirstOrDefaultAsync(pm => pm.ProjectId == column.ProjectId && pm.UserId == userId);
+
+            if (membership != null && membership.Role == "Member")
+            {
+                // Member chỉ có thể tạo task cho bản thân
+                if (request.AssigneeId.HasValue
+                    && request.AssigneeId.Value != Guid.Empty
+                    && request.AssigneeId.Value != userId)
+                {
+                    throw new UnauthorizedAccessException("Bạn chỉ có thể giao task cho bản thân mình.");
+                }
+            }
         }
 
         var taskToInsert = new Models.Task
@@ -121,6 +136,26 @@ public class TaskService(LetDoItContext context) : ITaskService
         {
             return false;
         }
+        if (existingTask.ColumnId != null && existingTask.ColumnId != Guid.Empty)
+        {
+            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == existingTask.ColumnId) ?? throw new UnauthorizedAccessException("Bạn không có quyền xóa task này.");
+
+            // Kiểm tra Role của user trong project
+            var membership = await _context.ProjectMembers
+                .FirstOrDefaultAsync(pm => pm.ProjectId == column.ProjectId && pm.UserId == userId);
+
+            if (membership != null && membership.Role == "Member")
+            {
+                // Member chỉ có thể xóa task do mình tạo
+                if (existingTask.AssigneeId.HasValue
+                    && existingTask.AssigneeId.Value != Guid.Empty
+                    && existingTask.AssigneeId.Value != existingTask.CreatedBy)
+                {
+                    throw new UnauthorizedAccessException("Bạn chỉ có thể xóa task do mình tạo.");
+                }
+            }
+        }
+
 
         _context.Tasks.Remove(existingTask);
         try
@@ -194,7 +229,27 @@ public class TaskService(LetDoItContext context) : ITaskService
             return false;
         }
 
-        // ✅ Đảm bảo DueDate là UTC
+        if (existingTask.ColumnId != null && existingTask.ColumnId != Guid.Empty)
+        {
+            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == existingTask.ColumnId) ?? throw new UnauthorizedAccessException("Bạn không có quyền xóa task này.");
+
+            // Kiểm tra Role của user trong project
+            var membership = await _context.ProjectMembers
+                .FirstOrDefaultAsync(pm => pm.ProjectId == column.ProjectId && pm.UserId == userId);
+
+            if (membership != null && membership.Role == "Member")
+            {
+                // Member chỉ có thể sửa task do mình tạo
+                if (existingTask.AssigneeId.HasValue
+                    && existingTask.AssigneeId.Value != Guid.Empty
+                    && existingTask.AssigneeId.Value != existingTask.CreatedBy)
+                {
+                    throw new UnauthorizedAccessException("Bạn chỉ có thể sửa task do mình tạo.");
+                }
+            }
+        }
+
+        // Đảm bảo DueDate là UTC
         var dueDate = task.DueDate;
         if (dueDate.HasValue)
         {
@@ -281,9 +336,28 @@ public class TaskService(LetDoItContext context) : ITaskService
             return false;
         }
 
-        if (!await UserCanMoveTaskAsync(userId, existingTask, targetColumn.ProjectId))
+        // if (!await UserCanMoveTaskAsync(userId, existingTask, targetColumn.ProjectId))
+        // {
+        //     return false;
+        // }
+        if (existingTask.ColumnId != null && existingTask.ColumnId != Guid.Empty)
         {
-            return false;
+            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == existingTask.ColumnId) ?? throw new UnauthorizedAccessException("Bạn không có quyền xóa task này.");
+
+            // Kiểm tra Role của user trong project
+            var membership = await _context.ProjectMembers
+                .FirstOrDefaultAsync(pm => pm.ProjectId == column.ProjectId && pm.UserId == userId);
+
+            if (membership != null && membership.Role == "Member")
+            {
+                // Member chỉ có thể di chuyển task của bản thân.
+                if (existingTask.AssigneeId.HasValue
+                    && existingTask.AssigneeId.Value != Guid.Empty
+                    && existingTask.AssigneeId.Value != userId)
+                {
+                    throw new UnauthorizedAccessException("Bạn chỉ có thể di chuyển task của mình.");
+                }
+            }
         }
 
         existingTask.ColumnId = newColumnId;
@@ -362,7 +436,8 @@ public class TaskService(LetDoItContext context) : ITaskService
                 Visibility = (int)t.Visibility,
                 AssigneeId = t.AssigneeId,
                 AssigneeName = t.Assignee != null ? t.Assignee.Username : null,
-                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null
+                AssigneeAvatarUrl = t.Assignee != null ? t.Assignee.AvatarUrl : null,
+                CreatedByName = t.User != null ? t.User.Username : string.Empty
             })
             .OrderBy(t => t.DueDate)
             .ToListAsync();

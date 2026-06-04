@@ -27,6 +27,7 @@ export interface TaskResponse {
   assigneeId?: string | null;
   assigneeName?: string | null;
   assigneeAvatarUrl?: string | null;
+  createdByName?: string | null; // Name of the user who created the task
 }
 
 export interface CategoryResponse {

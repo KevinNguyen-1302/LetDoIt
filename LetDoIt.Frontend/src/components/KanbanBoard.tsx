@@ -39,6 +39,7 @@ import type {
 } from "@dnd-kit/core";
 import { createPortal } from "react-dom";
 import AddColaborators from "./AddColaborators";
+import UserMiniCard from "./UserMiniCard";
 
 interface KanbanBoardProps {
   projectId: string;
@@ -98,8 +99,10 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
     };
 
     window.addEventListener("taskCreated", handleTaskCreated);
+    window.addEventListener("taskUpdate", handleTaskCreated);
     return () => {
       window.removeEventListener("taskCreated", handleTaskCreated);
+      window.removeEventListener("taskUpdate", handleTaskCreated);
     };
   }, [projectId]);
 
@@ -342,7 +345,7 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
         {/* ADD COLLABORATORS BUTTON */}
         <AddColaborators projectId={projectId} />
       </div>
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex justify-between items-end mb-4">
         {/* <div className="flex items-center gap-4"> */}
 
         <div>
@@ -374,15 +377,18 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
         sensors={sensors}
       >
         <div>
-          <button
-            onClick={() => {
-              createNewColumn();
-            }}
-            className="mb-6 px-4 py-2 w-52 bg-[#548e76] flex text-white rounded-lg font-medium shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
-          >
-            <Plus className=" size-6" />
-            Add Column
-          </button>
+          <div className="flex items-center gap-10 ">
+            <button
+              onClick={() => {
+                createNewColumn();
+              }}
+              className="my-6 px-4 py-2 w-44 bg-[#548e76] flex text-white rounded-lg font-medium shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black"
+            >
+              <Plus className=" size-6" />
+              Add Column
+            </button>
+            <UserMiniCard projectId={projectId} />
+          </div>
           <div className="flex gap-4 mb-6 items-stretch overflow-x-auto px-4 py-5">
             <SortableContext items={columns.map((col) => col.columnId)}>
               <div className="flex gap-4 shrink-0">
