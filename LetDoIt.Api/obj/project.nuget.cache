@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0kAFUUORGK8=",
+  "dgSpecHash": "8kkQRNIBGiI=",
   "success": true,
-  "projectFilePath": "d:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
+  "projectFilePath": "D:\\Porfolio\\LetDoIt\\LetDoIt\\LetDoIt.Api\\LetDoIt.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\duykh\\.nuget\\packages\\dapper\\2.1.72\\dapper.2.1.72.nupkg.sha512",
     "C:\\Users\\duykh\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

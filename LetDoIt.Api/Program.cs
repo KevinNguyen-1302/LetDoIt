@@ -2,8 +2,12 @@ using LetDoIt.Api.Data;
 using LetDoIt.Api.Models;
 using LetDoIt.Api.Services;
 using LetDoIt.Api.Workers;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -31,6 +35,27 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<LetDoItContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddCookie()
+    .AddGoogle(options =>
+    {
+        var clientId = builder.Configuration["Authentication:Google:ClientId"];
+
+        if (clientId == null)
+        {
+            throw new ArgumentException(nameof(clientId));
+        }
+
+        var clientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+        if (clientSecret == null)
+        {
+            throw new ArgumentException(nameof(clientSecret));
+        }
+
+        options.ClientId = clientId;
+        options.ClientSecret = clientSecret;
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -125,6 +150,36 @@ Console.WriteLine(@"
 ");
 
 Console.WriteLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+app.MapGet("/api/account/login/google", ([FromQuery] string returnUrl,
+                                        LinkGenerator linkGenerator,
+                                        HttpContext context) =>
+{
+    var redirectUrl = linkGenerator.GetPathByName(context, "GoogleLoginCallback") + $"?returnUrl={Uri.EscapeDataString(returnUrl)}";
+    var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+
+    return Results.Challenge(properties, ["Google"]);
+});
+
+
+app.MapGet("/api/account/login/google/callback", async ([FromQuery] string returnUrl,
+    HttpContext context, IAuthService authService) =>
+{
+    var result = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+    if (!result.Succeeded)
+    {
+        return Results.Unauthorized();
+    }
+
+    var token = await authService.LoginWithGoogleAsync(result.Principal);
+
+    // Xoá cookie đăng nhập Google tạm thời
+    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+    return Results.Redirect($"{returnUrl}?accessToken={token.AccessToken}&refreshToken={token.RefreshToken}");
+
+}).WithName("GoogleLoginCallback");
 
 app.Run();
 

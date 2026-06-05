@@ -2,6 +2,7 @@ using Dapper;
 using LetDoIt.Api.Data;
 using LetDoIt.Api.DTOs;
 using LetDoIt.Api.Models;
+using LetDoIt.Api.Response;
 using LetsDoIt.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -160,5 +161,51 @@ public class AuthService(LetDoItContext context, IConfiguration configuration) :
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 
+    public async Task<TokenResponseDto> LoginWithGoogleAsync(ClaimsPrincipal? principal)
+    {
+        if (principal == null)
+        {
+            throw new BusinessException(1008, "Cannot login with Google", 400);
+        }
 
+        var email = principal.FindFirstValue(ClaimTypes.Email);
+
+        if (email == null)
+        {
+            throw new BusinessException(1009, "Cannot login with Google: Email is null", 400);
+        }
+
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+        {
+            var newUser = new Users
+            {
+                UserId = Guid.NewGuid(),
+                Username = email,
+                Email = email,
+                DisplayName = principal.FindFirstValue(ClaimTypes.Name) 
+                              ?? principal.FindFirstValue(ClaimTypes.GivenName) 
+                              ?? email,
+                HashedPassword = new PasswordHasher<Users>().HashPassword(null!, Guid.NewGuid().ToString("N")),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                LastLogin = DateTime.UtcNow,
+                Role = "User"
+            };
+
+            context.Users.Add(newUser);
+            await context.SaveChangesAsync();
+
+            user = newUser;
+        }
+        else
+        {
+            user.LastLogin = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+        }
+
+        return await CreateTokenResponse(user);
+    }
 }
+

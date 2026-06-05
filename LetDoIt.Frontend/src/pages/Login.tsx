@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { handleApiError } from "../utils/toastHelper";
 import { jwtDecode } from "jwt-decode";
 import { Eye, EyeOff } from "lucide-react";
+import LoginWithGoogleButton from "../components/LoginWithGoogleButton";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -37,29 +38,8 @@ const Login = () => {
           return;
         }
 
-        localStorage.setItem("token", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-
-        // Decode token để lấy userId
-        try {
-          const decoded: any = jwtDecode(accessToken);
-          console.log("🔍 Decoded token claims:", Object.keys(decoded)); // Debug: xem tất cả claims
-          const userId =
-            decoded.sub || decoded.nameid || decoded.userId || decoded.id;
-          console.log("📝 Extracted userId:", userId); // Debug
-          if (userId) {
-            localStorage.setItem("userId", userId);
-            console.log("✅ userId saved to localStorage:", userId);
-          } else {
-            console.error("❌ No userId found in token claims:", decoded);
-          }
-        } catch (error) {
-          console.error("Failed to decode token:", error);
-        }
-
-        window.dispatchEvent(new Event("authChange"));
-
-        navigate("/home");
+        // Điều hướng sang trang LoginSuccess để xử lý chung logic lưu Token
+        navigate(`/login-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
       } else {
         handleApiError(response.status, data.message);
       }
@@ -71,21 +51,19 @@ const Login = () => {
 
   return (
     <div className=" text-gray-900 antialiased">
-      <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-[#f8f4f3]">
+      <div className="min-h-screen flex flex-col sm:justify-center items-center sm:pt-0 bg-[#f8f4f3]">
         <div>
-          <a href="/">
-            <h2 className="font-bold text-4xl">
-              Let's{" "}
-              <span className="bg-[#eff759] text-black px-2 rounded-md">
-                DoIt
-              </span>
-            </h2>
-          </a>
+          <h2 className="font-bold text-4xl">
+            Let's{" "}
+            <span className="bg-[#eff759] text-black px-2 rounded-md">
+              DoIt
+            </span>
+          </h2>
         </div>
 
         <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
           <form onSubmit={handleSubmit}>
-            <div className="py-8">
+            <div className="py-4">
               <center>
                 <span className="text-3xl font-semibold">Log In</span>
               </center>
@@ -203,6 +181,14 @@ const Login = () => {
               </button>
             </div>
           </form>
+          <span className="mt-2 mb-4 flex text-center items-center">
+            <hr className="flex-1" />
+            <span className="mx-2 font-medium">Or</span>
+            <hr className="flex-1" />
+          </span>
+          <div className="flex items-center justify-center mb-4">
+            <LoginWithGoogleButton />
+          </div>
         </div>
       </div>
     </div>

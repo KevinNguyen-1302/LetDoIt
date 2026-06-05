@@ -1,15 +1,21 @@
-import Login from     './pages/Login'
-import Home from      './pages/Home'
-import Register from  './pages/Register'
-import Analytic from  './pages/Analytics';
-import Focus from     './pages/Focus';
-import Calendar from  './pages/Calendar';
-import KanbanPage from './pages/KanbanPage';
-import Layout from './components/Layout';
-import { Navigate, Route, Routes } from 'react-router-dom'
-import { isAuthenticated, isTokenExpiring, refreshTokenAsync, logout } from './services/authService';
-import { useEffect, useState } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Register from "./pages/Register";
+import Analytic from "./pages/Analytics";
+import Focus from "./pages/Focus";
+import Calendar from "./pages/Calendar";
+import KanbanPage from "./pages/KanbanPage";
+import Layout from "./components/Layout";
+import { Navigate, Route, Routes } from "react-router-dom";
+import {
+  isAuthenticated,
+  isTokenExpiring,
+  refreshTokenAsync,
+  logout,
+} from "./services/authService";
+import { useEffect, useState } from "react";
+import "react-toastify/dist/ReactToastify.css";
+import LoginSuccess from "./components/LoginSuccess";
 
 function App() {
   const [isAuth, setIsAuth] = useState(isAuthenticated());
@@ -26,7 +32,7 @@ function App() {
           setIsAuth(isAuthenticated());
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error("Auth check failed:", error);
         logout();
         setIsAuth(false);
       } finally {
@@ -41,8 +47,8 @@ function App() {
       setIsAuth(isAuthenticated());
     };
 
-    window.addEventListener('authChange', handleAuthChange);
-    return () => window.removeEventListener('authChange', handleAuthChange);
+    window.addEventListener("authChange", handleAuthChange);
+    return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
   if (isLoading) {
@@ -51,20 +57,24 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={isAuth ? <Navigate to="/home" /> : <Navigate to="/login" />} />
-      <Route path='/login' element={<Login />} />
-      <Route path='/register' element={<Register />} />
-      
+      <Route
+        path="/"
+        element={isAuth ? <Navigate to="/home" /> : <Navigate to="/login" />}
+      />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/login-success" element={<LoginSuccess />} />
+
       {/* Protected routes with Layout */}
       <Route element={isAuth ? <Layout /> : <Navigate to="/login" />}>
-        <Route path='/home/' element={<Home />} />
-        <Route path='/project/:projectId' element={<KanbanPage />} />
-        <Route path='/calendar' element={<Calendar />} />
-        <Route path='/focus' element={<Focus />} />
-        <Route path='/analytics' element={<Analytic />} />
+        <Route path="/home/" element={<Home />} />
+        <Route path="/project/:projectId" element={<KanbanPage />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/focus" element={<Focus />} />
+        <Route path="/analytics" element={<Analytic />} />
       </Route>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
