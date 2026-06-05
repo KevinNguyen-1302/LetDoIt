@@ -466,7 +466,7 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                 </p>
               )}
               {task.assigneeName ? (
-                <div className="flex items-center gap-2 pl-1 pr-4 py-1 mt-5 min-w-20 max-w-46 rounded-full border-2 border-black bg-[#E8FF46]">
+                <div className="flex items-center gap-2 pl-1 pr-2 py-1 mt-5 min-w-20 max-w-46 rounded-full border-2 border-black bg-[#E8FF46]">
                   {task.assigneeAvatarUrl ? (
                     <img
                       src={task.assigneeAvatarUrl}
@@ -478,7 +478,7 @@ const TaskCardDetail = ({ task, isOpen, onClose, columns }: Props) => {
                       {task.assigneeName.charAt(0)}
                     </div>
                   )}
-                  <span className=" text-black truncate max-w-20">
+                  <span className=" text-black truncate max-w-40">
                     {task.assigneeName}
                   </span>
                 </div>

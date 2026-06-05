@@ -104,7 +104,7 @@ export const removeMemberFromProject = async (
   memberId: string,
 ) => {
   const response = await api.delete<any>(
-    `/Project/RemoveMemberFromProject/${projectId}/${memberId}`,
+    `/Project/RemoveMemberFromProject/${projectId}/members/${memberId}`,
   );
   return response.data?.data;
 };

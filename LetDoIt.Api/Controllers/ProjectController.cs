@@ -90,7 +90,7 @@ namespace LetDoIt.Api.Controllers
         }
 
         [Authorize]
-        [HttpPut("{projectId}/members/{memberId}")]
+        [HttpDelete("{projectId}/members/{memberId}")]
         public async Task<ActionResult<ApiResponse<object>>> RemoveMemberFromProject(Guid projectId, Guid memberId)
         {
             await _service.RemoveMemberFromProjectAsync(projectId, memberId, User);

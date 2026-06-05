@@ -75,7 +75,9 @@ const AddColaborators = ({ projectId }: AddColaboratorsProps) => {
       setUsers([]);
     } catch (error: any) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to add user to project.");
+      toast.error(
+        error.response?.data?.message || "Failed to add user to project.",
+      );
     }
   };
 
@@ -115,7 +117,7 @@ const AddColaborators = ({ projectId }: AddColaboratorsProps) => {
             }
           }}
           // 2. CHỈNH Ở ĐÂY: Thêm `top-1/2 -translate-y-1/2` cố định để nút luôn nằm chính giữa tâm dọc của form, bất kể độ phân giải màn hình.
-          className="absolute w-10 h-10 rounded-full bg-black flex items-center justify-center text-white transition-all duration-300 active:scale-120 cursor-pointer right-0 top-1/2 -translate-y-1/2"
+          className="absolute w-10 h-10 rounded-full bg-black flex items-center justify-center text-white transition-all duration-300 active:scale-120 cursor-pointer right-0 top-1/2 -translate-y-1/2  wobble-button"
         >
           <UserPlus size={20} />
         </button>
@@ -125,23 +127,45 @@ const AddColaborators = ({ projectId }: AddColaboratorsProps) => {
       {isOpen && (searchValue.trim() !== "" || users.length > 0) && (
         <div className="absolute top-14 left-0 w-72 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-80 overflow-y-auto">
           {isSearching ? (
-            <div className="p-4 text-center text-gray-500 font-medium">Searching...</div>
+            <div className="p-4 text-center text-gray-500 font-medium">
+              Searching...
+            </div>
           ) : users.length > 0 ? (
             <div className="flex flex-col py-2">
               {users.map((user) => (
-                <div key={user.userId} className="flex items-center justify-between p-3 mx-2 rounded-lg hover:bg-gray-100 transition-colors group">
+                <div
+                  key={user.userId}
+                  className="flex items-center justify-between p-3 mx-2 rounded-lg hover:bg-gray-100 transition-colors group"
+                >
                   <div className="flex items-center gap-3 overflow-hidden">
                     {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.username} className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200" />
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.username}
+                        className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200"
+                      />
                     ) : (
-                      <CircleUser strokeWidth={1.5} className="w-10 h-10 text-gray-400 shrink-0" />
+                      <CircleUser
+                        strokeWidth={1.5}
+                        className="w-10 h-10 text-gray-400 shrink-0"
+                      />
                     )}
                     <div className="flex flex-col overflow-hidden">
-                      <span className="font-semibold text-sm text-gray-800 truncate" title={user.username}>{user.username}</span>
-                      <span className="text-xs text-gray-500 truncate" title={user.email}>{user.email}</span>
+                      <span
+                        className="font-semibold text-sm text-gray-800 truncate"
+                        title={user.username}
+                      >
+                        {user.username}
+                      </span>
+                      <span
+                        className="text-xs text-gray-500 truncate"
+                        title={user.email}
+                      >
+                        {user.email}
+                      </span>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => handleAddMember(user.userId)}
                     className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white hover:bg-green-600 transition-all shrink-0 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100 scale-90 group-hover:scale-100"
                     title="Add Member"
@@ -153,7 +177,9 @@ const AddColaborators = ({ projectId }: AddColaboratorsProps) => {
             </div>
           ) : (
             searchValue.trim() !== "" && (
-              <div className="p-4 text-center text-gray-500 font-medium">No users found.</div>
+              <div className="p-4 text-center text-gray-500 font-medium">
+                No users found.
+              </div>
             )
           )}
         </div>

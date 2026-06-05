@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using LetDoIt.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Dapper;
@@ -202,7 +202,7 @@ public class ProjectService(LetDoItContext context) : IProjectService
             await connection.OpenAsync();
 
         var members = await connection.QueryAsync<UserMemberDto>(sql, new { ProjectId = projectId });
-        return members.ToList();
+        return [.. members];
     }
 
     public async Task<bool> AddMemberToProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
@@ -233,16 +233,45 @@ public class ProjectService(LetDoItContext context) : IProjectService
 
     public async Task<bool> RemoveMemberFromProjectAsync(Guid projectId, Guid memberId, ClaimsPrincipal user)
     {
-        var connection = _context.Database.GetDbConnection();
-        if (connection.State == ConnectionState.Closed)
-            await connection.OpenAsync();
         var ownerId = GetUserId(user);
         var project = await _context.Projects.FindAsync(projectId);
-        if (project == null || project.UserId != ownerId) //Kiểm tra có phải chủ sở hữu và tồn tại không
+        if (project == null)
         {
-            throw new ArgumentException("Project is not exist or you are not the owner!");
+            throw new ArgumentException("Project does not exist!");
         }
-        var member = await _context.ProjectMembers.FindAsync(projectId, memberId) ?? throw new ArgumentException("Member is not exist in the project!");
+
+        // Người thực hiện hành động phải là chủ sở hữu dự án hoặc chính thành viên đó muốn rời đi
+        if (project.UserId != ownerId && memberId != ownerId)
+        {
+            throw new UnauthorizedAccessException("Bạn không có quyền thực hiện hành động này.");
+        }
+
+        var member = await _context.ProjectMembers
+            .FirstOrDefaultAsync(pm => pm.ProjectId == projectId && pm.UserId == memberId) 
+            ?? throw new ArgumentException("Thành viên không tồn tại trong dự án!");
+
+        if (member.Role == "Manager")
+        {
+            throw new ArgumentException("Quản lý không được phép rời khỏi dự án!");
+        }
+
+        // 1. Xóa các task trong dự án này do người đó tạo ra
+        var tasksToDelete = await _context.Tasks
+            .Include(t => t.Column)
+            .Where(t => t.Column != null && t.Column.ProjectId == projectId && t.CreatedBy == memberId)
+            .ToListAsync();
+        _context.Tasks.RemoveRange(tasksToDelete);
+
+        // 2. Những task được giao cho người đó (không phải do họ tạo) thì đổi Assignee thành null (Unassigned)
+        var tasksToUnassign = await _context.Tasks
+            .Include(t => t.Column)
+            .Where(t => t.Column != null && t.Column.ProjectId == projectId && t.AssigneeId == memberId && t.CreatedBy != memberId)
+            .ToListAsync();
+        foreach (var task in tasksToUnassign)
+        {
+            task.AssigneeId = null;
+        }
+
         _context.ProjectMembers.Remove(member);
         await _context.SaveChangesAsync();
         return true;

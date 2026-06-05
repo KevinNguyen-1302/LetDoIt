@@ -6,6 +6,7 @@ using LetDoIt.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Security.Claims;
+using LetDoIt.Api.Response;
 
 namespace LetDoIt.Api.Services;
 
@@ -231,7 +232,8 @@ public class TaskService(LetDoItContext context) : ITaskService
 
         if (existingTask.ColumnId != null && existingTask.ColumnId != Guid.Empty)
         {
-            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == existingTask.ColumnId) ?? throw new UnauthorizedAccessException("Bạn không có quyền xóa task này.");
+            var column = await _context.Columns.FirstOrDefaultAsync(c => c.ColumnId == existingTask.ColumnId)
+                ?? throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa task này.");
 
             // Kiểm tra Role của user trong project
             var membership = await _context.ProjectMembers
@@ -239,12 +241,16 @@ public class TaskService(LetDoItContext context) : ITaskService
 
             if (membership != null && membership.Role == "Member")
             {
-                // Member chỉ có thể sửa task do mình tạo
-                if (existingTask.AssigneeId.HasValue
-                    && existingTask.AssigneeId.Value != Guid.Empty
-                    && existingTask.AssigneeId.Value != existingTask.CreatedBy)
+                // Member chỉ có thể sửa task của chính mình (được gán hoặc tự tạo)
+                if (existingTask.AssigneeId != userId && existingTask.CreatedBy != userId)
                 {
-                    throw new UnauthorizedAccessException("Bạn chỉ có thể sửa task do mình tạo.");
+                    throw new UnauthorizedAccessException("Bạn chỉ có thể sửa task của chính mình.");
+                }
+
+                // Member không được thay đổi AssigneeId sang người khác
+                if (task.AssigneeId.HasValue && task.AssigneeId.Value != Guid.Empty && task.AssigneeId.Value != userId)
+                {
+                    throw new UnauthorizedAccessException("Bạn không thể thay đổi người thực hiện thành người khác.");
                 }
             }
         }
@@ -263,14 +269,19 @@ public class TaskService(LetDoItContext context) : ITaskService
             }
         }
 
-        // Map dữ liệu
+        // Cập nhật dữ liệu
         existingTask.Title = task.Title ?? existingTask.Title;
         existingTask.Description = task.Description ?? existingTask.Description;
         existingTask.DueDate = dueDate ?? existingTask.DueDate;
         existingTask.IsCompleted = task.IsCompleted ?? existingTask.IsCompleted;
         existingTask.Priority = task.Priority != null ? (Priority)task.Priority : existingTask.Priority;
         existingTask.Visibility = task.Visibility != null ? (Visibility)task.Visibility : existingTask.Visibility;
-        existingTask.AssigneeId = task.AssigneeId != null ? task.AssigneeId : existingTask.AssigneeId;
+
+        if (task.AssigneeId != null)
+        {
+            existingTask.AssigneeId = task.AssigneeId == Guid.Empty ? null : task.AssigneeId;
+        }
+
         try
         {
             await _context.SaveChangesAsync();
@@ -355,7 +366,7 @@ public class TaskService(LetDoItContext context) : ITaskService
                     && existingTask.AssigneeId.Value != Guid.Empty
                     && existingTask.AssigneeId.Value != userId)
                 {
-                    throw new UnauthorizedAccessException("Bạn chỉ có thể di chuyển task của mình.");
+                    throw new BusinessException(403, "Bạn chỉ có thể di chuyển task của mình.");
                 }
             }
         }

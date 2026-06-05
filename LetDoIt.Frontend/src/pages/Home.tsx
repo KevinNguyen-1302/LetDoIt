@@ -9,6 +9,7 @@ import { getProjectsByUserId, type Project } from "../services/projectService";
 import { getCurrentUserId, isAuthenticated } from "../services/authService";
 import { toast } from "react-toastify";
 import ProjectContainer from "../components/ProjectContainer";
+import Footer from "../components/Footer";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -153,7 +154,7 @@ const Home = () => {
           </div>
         )}
       </div>
-
+      <Footer />
       <CreateProjectModal isOpen={isModalOpen} onClose={handleModalClose} />
     </div>
   );

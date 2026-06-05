@@ -53,11 +53,43 @@
 }
 
 .element:hover, .element:focus-visible {
-  /* box-shadow: 0 10px 20px rgba(0, 0, 0, 1); */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .element:hover, .element:focus-visible {
     animation: hover-pulse 0.8s ease infinite alternate;
+  }
+}
+
+@keyframes hover-wobble {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-7deg); }
+  40% { transform: rotate(8deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(5deg); }
+}
+
+.wobble-button {
+  transition: box-shadow 0.6s ease;
+}
+
+.wobble-button:hover, .wobble-button:focus-visible {
+  /* box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wobble-button:hover, .wobble-button:focus-visible {
+    animation: hover-wobble 0.6s ease 1;
+  }
+}
+
+.tilt-image {
+  transition: transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tilt-image:hover, .tilt-image:focus-visible {
+    transform: scale(1.1) rotate(3deg) translateY(-5px) skewX(2deg);
   }
 }
