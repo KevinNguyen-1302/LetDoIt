@@ -347,7 +347,6 @@ const KanbanBoard = ({ projectId, projectTitle }: KanbanBoardProps) => {
       </div>
       <div className="flex justify-between items-end mb-4">
         {/* <div className="flex items-center gap-4"> */}
-
         <div>
           <h2 className="font-cherry text-5xl text-[#5E548E] tracking-wide mb-1">
             {projectTitle || "Project Board"}
